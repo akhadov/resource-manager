@@ -1,0 +1,64 @@
+﻿@page "/documents"
+@using ResourceManager.Application.Documents.GetDocuments
+@using ResourceManager.UI.Services.Interfaces
+
+@inject IDocumentService _documentService;
+
+<h3>Documents</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Id
+            </th>
+            <th>
+                CreatorId
+            </th>
+            <th>
+                Title
+            </th>
+            <th>
+                Content
+            </th>
+            <th>
+                Status
+            </th>
+            <th>
+                CreatedAt
+            </th>
+            <th>
+                UpdatedAt
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var document in _documents)
+        {
+            <tr>
+                <td>@document.Id</td>
+                <td>@document.CreatorId</td>
+                <td>@document.Title</td>
+                <td>@document.Content</td>
+                <td>@document.Status</td>
+                <td>@document.CreatedAt</td>
+                <td>@document.UpdatedAt</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private IEnumerable<DocumentResponse>? _documents { get; set; } = new List<DocumentResponse>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var documents = await _documentService.GetDocuments();
+
+        if (documents?.Count != 0)
+        {
+            _documents = documents;
+        }
+
+    }
+}
