@@ -1,7 +1,9 @@
 using Asp.Versioning;
 using Asp.Versioning.Builder;
 using ResourceManager.Api.Extensions;
+using ResourceManager.Api.Storage;
 using ResourceManager.Application;
+using ResourceManager.Application.Abstractions.Storage;
 using ResourceManager.Infrastructure;
 using Serilog;
 using System.Reflection;
@@ -15,6 +17,8 @@ builder.Services
     .AddApplication()
     .AddPresentation()
     .AddInfrastructure(builder.Configuration);
+
+builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddCors(options =>
 {
