@@ -1,12 +1,10 @@
-﻿using ResourceManager.Application.Documents.CreateDocument;
-using ResourceManager.Application.Documents.GetDocument;
-using ResourceManager.Application.Documents.GetDocuments;
+﻿using ResourceManager.Application.DocumentHistories.GetDocumentHistory;
+using ResourceManager.Application.Documents.CreateDocument;
 using ResourceManager.Application.Documents.UpdateDocument;
 using ResourceManager.UI.Services.Interfaces;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Xml.Linq;
 
 namespace ResourceManager.UI.Services;
 
@@ -94,6 +92,27 @@ public class DocumentService : IDocumentService
             throw;
         }
     }
+
+    public async Task<List<HistoryResponse>> GetHistories(Guid documentId)
+    {
+        try
+        {
+            // Define the URL for fetching document histories
+            var apiResponse = await _http.GetStreamAsync($"documents/{documentId}/histories");
+
+            // Deserialize the response into a list of HistoryResponse
+            var histories = await JsonSerializer.DeserializeAsync<List<HistoryResponse>>(apiResponse, _serializerOptions);
+
+            return histories;
+        }
+        catch (Exception e)
+        {
+            // Log the exception and rethrow or return an empty list
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
 
     public async Task<bool> UpdateDocument(Guid documentId, string title, string content)
     {

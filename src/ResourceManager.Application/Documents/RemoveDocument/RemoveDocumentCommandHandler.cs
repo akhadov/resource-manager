@@ -15,11 +15,7 @@ internal sealed class RemoveDocumentCommandHandler(
     {
         var document = await documentRepository.GetByIdAsync(request.DocumentId, cancellationToken);
 
-        var history = await documentHistoryRepository.GetByIdAsync(request.DocumentId, cancellationToken);
-
         documentRepository.Delete(document);
-
-        documentHistoryRepository.Delete(history);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

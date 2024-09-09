@@ -16,10 +16,6 @@ internal sealed class GetDocumentQueryHandler(
         // Retrieve the document
         var document = await documentRepository.GetByIdAsync(request.DocumentId, cancellationToken);
 
-
-        // Retrieve the document histories
-        var documentHistories = await documentHistoryRepository.GetByIdAsync(request.DocumentId, cancellationToken);
-
         var user = await userRepository.GetByIdAsync(request.UserId, cancellationToken);
 
         if (document.Status == DocumentStatus.PendingApproval)

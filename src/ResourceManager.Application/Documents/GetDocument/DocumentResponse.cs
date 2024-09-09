@@ -11,5 +11,5 @@ public sealed record DocumentResponse(
     DateTime CreatedAt,
     DateTime? UpdatedAt)
 {
-    public List<DocumentHistoryResponse> DocumentHistories { get; set;  } = [];
+    public List<DocumentHistoryResponse> DocumentHistories { get; set; } = [];
 }

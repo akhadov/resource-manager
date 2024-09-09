@@ -2,8 +2,7 @@
 
 public interface IDocumentHistoryRepository
 {
-    Task<IEnumerable<DocumentHistory>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<DocumentHistory?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<List<DocumentHistory>> GetAllByDocumentIdAsync(Guid documentId, CancellationToken cancellationToken = default);
     void Insert(DocumentHistory documentHistory);
     void Update(DocumentHistory documentHistory);
     void Delete(DocumentHistory documentHistory);

@@ -6,14 +6,11 @@ namespace ResourceManager.Infrastructure.Repositories;
 
 internal sealed class DocumentHistoryRepository(ApplicationDbContext context) : IDocumentHistoryRepository
 {
-    public async Task<IEnumerable<DocumentHistory>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<List<DocumentHistory>> GetAllByDocumentIdAsync(Guid documentId, CancellationToken cancellationToken = default)
     {
-        return await context.Histories.ToListAsync(cancellationToken);
-    }
-
-    public Task<DocumentHistory?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return context.Histories.FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
+        return await context.Histories
+            .Where(h => h.DocumentId == documentId)
+            .ToListAsync(cancellationToken);
     }
 
     public void Insert(DocumentHistory documentHistory)
@@ -30,4 +27,6 @@ internal sealed class DocumentHistoryRepository(ApplicationDbContext context) : 
     {
         context.Histories.Remove(documentHistory);
     }
+
+
 }

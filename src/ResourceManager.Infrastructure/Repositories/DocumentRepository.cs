@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ResourceManager.Domain.Documents;
 using ResourceManager.Infrastructure.Database;
-using static Microsoft.AspNetCore.Hosting.Internal.HostingApplication;
 
 namespace ResourceManager.Infrastructure.Repositories;
 

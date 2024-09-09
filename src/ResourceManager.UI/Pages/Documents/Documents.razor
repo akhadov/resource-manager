@@ -1,64 +1,115 @@
 ﻿@page "/documents"
 @using ResourceManager.Application.Documents.GetDocuments
+@using ResourceManager.Application.DocumentHistories.GetDocumentHistory
 @using ResourceManager.UI.Services.Interfaces
+@inject IDocumentService _documentService
 
-@inject IDocumentService _documentService;
+<MudText Typo="Typo.h3">Documents</MudText>
 
-<h3>Documents</h3>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                Id
-            </th>
-            <th>
-                CreatorId
-            </th>
-            <th>
-                Title
-            </th>
-            <th>
-                Content
-            </th>
-            <th>
-                Status
-            </th>
-            <th>
-                CreatedAt
-            </th>
-            <th>
-                UpdatedAt
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var document in _documents)
+<MudTable Items="_documents" Hover="true" Bordered="true" Striped="true">
+    <ColGroup>
+        <col style="width:100px;" /> <!-- Document ID -->
+        <col style="width:300px;" /> <!-- Creator ID -->
+        <col style="width:300px;" /> <!-- Title -->
+        <col /> <!-- Content -->
+        <col style="width:100px;" /> <!-- Status -->
+        <col style="width:200px;" /> <!-- CreatedAt -->
+        <col style="width:200px;" /> <!-- UpdatedAt -->
+        <col style="width:150px;" /> <!-- Actions -->
+    </ColGroup>
+    <HeaderContent>
+        <MudTh>Id</MudTh>
+        <MudTh>CreatorId</MudTh>
+        <MudTh>Title</MudTh>
+        <MudTh>Content</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>CreatedAt</MudTh>
+        <MudTh>UpdatedAt</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd> <!-- Document ID comes first -->
+        <MudTd DataLabel="CreatorId">@context.CreatorId</MudTd>
+        <MudTd DataLabel="Title">@context.Title</MudTd>
+        <MudTd DataLabel="Content">@context.Content</MudTd>
+        <MudTd DataLabel="Status">@context.Status</MudTd>
+        <MudTd DataLabel="CreatedAt">@context.CreatedAt</MudTd>
+        <MudTd DataLabel="UpdatedAt">@context.UpdatedAt</MudTd>
+        <MudTd>
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="@(async () => await ShowHistories(context.Id))">
+                @(selectedDocumentId == context.Id ? "Hide" : "Show") History
+            </MudButton>
+        </MudTd> <!-- Action button comes after Document ID and other fields -->
+    </RowTemplate>
+    <ChildRowContent>
+        @if (selectedDocumentId == context.Id)
         {
-            <tr>
-                <td>@document.Id</td>
-                <td>@document.CreatorId</td>
-                <td>@document.Title</td>
-                <td>@document.Content</td>
-                <td>@document.Status</td>
-                <td>@document.CreatedAt</td>
-                <td>@document.UpdatedAt</td>
-            </tr>
+            <MudTr>
+                <td colspan="8">
+                    <MudCard Elevation="0">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.body1">History Details for Document <strong>@context.Title</strong></MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent Class="pa-0">
+                            <MudTable Items="_histories" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col style="width:200px;" />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh>DocumentId</MudTh>
+                                    <MudTh>UserId</MudTh>
+                                    <MudTh>Action</MudTh>
+                                    <MudTh>Type</MudTh>
+                                    <MudTh>CreatedAt</MudTh>
+                                </HeaderContent>
+                                <RowTemplate Context="historyContext">
+                                    <MudTd DataLabel="DocumentId">@historyContext.DocumentId</MudTd>
+                                    <MudTd DataLabel="UserId">@historyContext.UserId</MudTd>
+                                    <MudTd DataLabel="Action">@historyContext.Action</MudTd>
+                                    <MudTd DataLabel="Type">@historyContext.Type</MudTd>
+                                    <MudTd DataLabel="CreatedAt">@historyContext.CreatedAt</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudCardContent>
+                    </MudCard>
+                </td>
+            </MudTr>
         }
-    </tbody>
-</table>
+    </ChildRowContent>
+</MudTable>
 
-@code {
+@code
+{
     private IEnumerable<DocumentResponse>? _documents { get; set; } = new List<DocumentResponse>();
+    private IEnumerable<HistoryResponse>? _histories { get; set; } = new List<HistoryResponse>();
+    private Guid? selectedDocumentId;
 
     protected override async Task OnInitializedAsync()
     {
         var documents = await _documentService.GetDocuments();
-
         if (documents?.Count != 0)
         {
             _documents = documents;
         }
+    }
 
+    private async Task ShowHistories(Guid documentId)
+    {
+        if (selectedDocumentId == documentId)
+        {
+            // Hide details if the same document is clicked again
+            selectedDocumentId = null;
+            _histories = null;
+        }
+        else
+        {
+            // Show details for the selected document
+            selectedDocumentId = documentId;
+            _histories = await _documentService.GetHistories(documentId);
+        }
     }
 }
