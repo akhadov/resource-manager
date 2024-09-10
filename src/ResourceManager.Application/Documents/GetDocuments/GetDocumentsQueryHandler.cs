@@ -1,28 +1,34 @@
 ﻿using ResourceManager.Application.Abstractions.Messaging;
 using ResourceManager.Domain.Documents;
+using ResourceManager.Domain.Users;
 using ResourceManager.SharedKernel;
 
-namespace ResourceManager.Application.Documents.GetDocuments;
-
-internal sealed class GetDocumentsQueryHandler(
-    IDocumentRepository documentRepository)
-    : IQueryHandler<GetDocumentsQuery, IEnumerable<DocumentResponse>>
+namespace ResourceManager.Application.Documents.GetDocuments
 {
-    public async Task<Result<IEnumerable<DocumentResponse>>> Handle(GetDocumentsQuery request, CancellationToken cancellationToken)
+    internal sealed class GetDocumentsQueryHandler(
+        IDocumentRepository documentRepository,
+        IUserRepository userRepository)
+        : IQueryHandler<GetDocumentsQuery, IEnumerable<DocumentResponse>>
     {
-        var documents = await documentRepository.GetAllAsync(cancellationToken);
+        public async Task<Result<IEnumerable<DocumentResponse>>> Handle(GetDocumentsQuery request, CancellationToken cancellationToken)
+        {
+            var documents = await documentRepository.GetAllAsync(cancellationToken);
 
-        var result = documents.Select(
-            d => new DocumentResponse(
-                d.Id,
-                d.CreatorId,
-                d.Title,
-                d.Content,
-                d.Status,
-                d.CreatedAt,
-                d.UpdatedAt))
-            .ToList();
+            var users = await userRepository.GetAllAsync(cancellationToken);
 
-        return result;
+            var documentResponses = from document in documents
+                                    join user in users on document.CreatorId equals user.Id
+                                    select new DocumentResponse(
+                                        document.Id,
+                                        document.CreatorId,
+                                        user.Username,
+                                        document.Title,
+                                        document.Content,
+                                        document.Status,
+                                        document.CreatedAt,
+                                        document.UpdatedAt);
+
+            return documentResponses.ToList();
+        }
     }
 }

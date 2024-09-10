@@ -20,6 +20,7 @@
     <HeaderContent>
         <MudTh>Id</MudTh>
         <MudTh>CreatorId</MudTh>
+        <MudTh>Username</MudTh>
         <MudTh>Title</MudTh>
         <MudTh>Content</MudTh>
         <MudTh>Status</MudTh>
@@ -30,6 +31,7 @@
     <RowTemplate>
         <MudTd DataLabel="Id">@context.Id</MudTd> <!-- Document ID comes first -->
         <MudTd DataLabel="CreatorId">@context.CreatorId</MudTd>
+        <MudTd DataLabel="Username">@context.Username</MudTd>
         <MudTd DataLabel="Title">@context.Title</MudTd>
         <MudTd DataLabel="Content">@context.Content</MudTd>
         <MudTd DataLabel="Status">@context.Status</MudTd>
@@ -62,6 +64,7 @@
                                 <HeaderContent>
                                     <MudTh>DocumentId</MudTh>
                                     <MudTh>UserId</MudTh>
+                                    <MudTh>Name</MudTh>
                                     <MudTh>Action</MudTh>
                                     <MudTh>Type</MudTh>
                                     <MudTh>CreatedAt</MudTh>
@@ -69,6 +72,7 @@
                                 <RowTemplate Context="historyContext">
                                     <MudTd DataLabel="DocumentId">@historyContext.DocumentId</MudTd>
                                     <MudTd DataLabel="UserId">@historyContext.UserId</MudTd>
+                                    <MudTd DataLabel="Name">@historyContext.Name</MudTd>
                                     <MudTd DataLabel="Action">@historyContext.Action</MudTd>
                                     <MudTd DataLabel="Type">@historyContext.Type</MudTd>
                                     <MudTd DataLabel="CreatedAt">@historyContext.CreatedAt</MudTd>
