@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ResourceManager.Infrastructure.Database;
@@ -11,9 +12,11 @@ using ResourceManager.Infrastructure.Database;
 namespace ResourceManager.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240910132756_Cascade_Database")]
+    partial class Cascade_Database
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,7 +75,6 @@ namespace ResourceManager.Infrastructure.Database.Migrations
             modelBuilder.Entity("ResourceManager.Domain.Documents.DocumentHistory", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -99,9 +101,6 @@ namespace ResourceManager.Infrastructure.Database.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_histories");
-
-                    b.HasIndex("DocumentId")
-                        .HasDatabaseName("ix_histories_document_id");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_histories_user_id");
@@ -159,10 +158,10 @@ namespace ResourceManager.Infrastructure.Database.Migrations
                 {
                     b.HasOne("ResourceManager.Domain.Documents.Document", null)
                         .WithMany("Histories")
-                        .HasForeignKey("DocumentId")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_histories_documents_document_id");
+                        .HasConstraintName("fk_histories_documents_id");
 
                     b.HasOne("ResourceManager.Domain.Users.User", null)
                         .WithMany()

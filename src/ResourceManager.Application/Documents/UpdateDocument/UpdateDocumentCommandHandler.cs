@@ -8,7 +8,6 @@ namespace ResourceManager.Application.Documents.UpdateDocument;
 
 internal sealed class UpdateDocumentCommandHandler(
     IDocumentRepository documentRepository,
-    IDocumentHistoryRepository documentHistoryRepository,
     IUserRepository userRepository,
     IUnitOfWork unitOfWork,
     IDateTimeProvider dateTimeProvider)
@@ -30,6 +29,7 @@ internal sealed class UpdateDocumentCommandHandler(
             request.Title,
             request.Content,
             dateTimeProvider.UtcNow);
+
 
         documentRepository.Update(document);
 

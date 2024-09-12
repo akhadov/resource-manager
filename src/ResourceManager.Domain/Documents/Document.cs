@@ -14,7 +14,6 @@ public sealed class Document : Entity
         string content,
         DocumentStatus status,
         DateTime createdAt)
-        : base(id)
     {
         CreatorId = creatorId;
         Title = title;
@@ -71,15 +70,14 @@ public sealed class Document : Entity
     }
 
 
-    public void SubmitForApproval(Guid userId, Level userLevel, DateTime updatedAt)
+    public void SubmitForApproval(Guid userId, DateTime createdAt)
     {
         if (Status != DocumentStatus.Draft)
             throw new InvalidOperationException("Only draft documents can be submitted for approval.");
 
         Status = DocumentStatus.PendingApproval;
-        CurrentApproverLevel = userLevel;
-        UpdatedAt = updatedAt;
-        AddHistory(userId, "Submitted for approval", HistoryType.StatusChange, updatedAt);
+
+        AddHistory(userId, "Submitted for approval", HistoryType.StatusChange, createdAt);
     }
 
     public void Approve(Guid approverId, Level approverLevel, Level? nextApproverLevel, DateTime updatedAt)

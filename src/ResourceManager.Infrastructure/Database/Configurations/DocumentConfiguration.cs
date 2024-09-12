@@ -13,7 +13,8 @@ internal sealed class DocumentConfiguration : IEntityTypeConfiguration<Document>
 
         builder.HasMany(h => h.Histories)
             .WithOne()
-            .HasForeignKey(d => d.Id);
+            .HasForeignKey(d => d.DocumentId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne<User>()
                 .WithMany()

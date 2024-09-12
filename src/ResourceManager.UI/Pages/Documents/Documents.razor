@@ -1,25 +1,33 @@
 ﻿@page "/documents"
-@using ResourceManager.Application.Documents.GetDocuments
+@using ResourceManager.Application.Documents.CreateDocument
 @using ResourceManager.Application.DocumentHistories.GetDocumentHistory
+@using ResourceManager.Application.Documents.GetDocuments
 @using ResourceManager.UI.Services.Interfaces
 @inject IDocumentService _documentService
 
 <MudText Typo="Typo.h3">Documents</MudText>
 
+<!-- Add Document Button (top right) -->
+<MudGrid>
+    <MudItem xs="10">
+        <!-- Placeholder for title or filters if needed -->
+    </MudItem>
+    <MudItem xs="2">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowAddDocumentDialog">Add Document</MudButton>
+    </MudItem>
+</MudGrid>
+
+<!-- Documents Table -->
 <MudTable Items="_documents" Hover="true" Bordered="true" Striped="true">
     <ColGroup>
-        <col style="width:100px;" /> <!-- Document ID -->
-        <col style="width:300px;" /> <!-- Creator ID -->
-        <col style="width:300px;" /> <!-- Title -->
-        <col /> <!-- Content -->
+        <col style="width:300px;" /> <!-- Username -->
+        <col /> <!-- Title -->
         <col style="width:100px;" /> <!-- Status -->
         <col style="width:200px;" /> <!-- CreatedAt -->
         <col style="width:200px;" /> <!-- UpdatedAt -->
         <col style="width:150px;" /> <!-- Actions -->
     </ColGroup>
     <HeaderContent>
-        <MudTh>Id</MudTh>
-        <MudTh>CreatorId</MudTh>
         <MudTh>Username</MudTh>
         <MudTh>Title</MudTh>
         <MudTh>Content</MudTh>
@@ -29,8 +37,6 @@
         <MudTh>Actions</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Id">@context.Id</MudTd> <!-- Document ID comes first -->
-        <MudTd DataLabel="CreatorId">@context.CreatorId</MudTd>
         <MudTd DataLabel="Username">@context.Username</MudTd>
         <MudTd DataLabel="Title">@context.Title</MudTd>
         <MudTd DataLabel="Content">@context.Content</MudTd>
@@ -41,77 +47,78 @@
             <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="@(async () => await ShowHistories(context.Id))">
                 @(selectedDocumentId == context.Id ? "Hide" : "Show") History
             </MudButton>
-        </MudTd> <!-- Action button comes after Document ID and other fields -->
+        </MudTd> <!-- Action button -->
     </RowTemplate>
+
+    <!-- Display History under the selected document -->
     <ChildRowContent>
-        @if (selectedDocumentId == context.Id)
+        @if (selectedDocumentId == context.Id && _histories != null)
         {
             <MudTr>
-                <td colspan="8">
-                    <MudCard Elevation="0">
-                        <MudCardHeader>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.body1">History Details for Document <strong>@context.Title</strong></MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent Class="pa-0">
-                            <MudTable Items="_histories" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0">
-                                <ColGroup>
-                                    <col />
-                                    <col />
-                                    <col style="width:200px;" />
-                                </ColGroup>
-                                <HeaderContent>
-                                    <MudTh>DocumentId</MudTh>
-                                    <MudTh>UserId</MudTh>
-                                    <MudTh>Name</MudTh>
-                                    <MudTh>Action</MudTh>
-                                    <MudTh>Type</MudTh>
-                                    <MudTh>CreatedAt</MudTh>
-                                </HeaderContent>
-                                <RowTemplate Context="historyContext">
-                                    <MudTd DataLabel="DocumentId">@historyContext.DocumentId</MudTd>
-                                    <MudTd DataLabel="UserId">@historyContext.UserId</MudTd>
-                                    <MudTd DataLabel="Name">@historyContext.Name</MudTd>
-                                    <MudTd DataLabel="Action">@historyContext.Action</MudTd>
-                                    <MudTd DataLabel="Type">@historyContext.Type</MudTd>
-                                    <MudTd DataLabel="CreatedAt">@historyContext.CreatedAt</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </MudCardContent>
-                    </MudCard>
-                </td>
+                <MudTd ColSpan="9">
+                    <MudTable Items="_histories" Hover="true" Bordered="true">
+                        <HeaderContent>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Action</MudTh>
+                            <MudTh>Type</MudTh>
+                            <MudTh>CreatedAt</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="historyContext">
+                            <MudTd DataLabel="Name">@historyContext.Name</MudTd>
+                            <MudTd DataLabel="Action">@historyContext.Action</MudTd>
+                            <MudTd DataLabel="Type">@historyContext.Type</MudTd>
+                            <MudTd DataLabel="CreatedAt">@historyContext.CreatedAt</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudTd>
             </MudTr>
         }
     </ChildRowContent>
 </MudTable>
 
-@code
-{
+<!-- Include the AddDocumentDialog component -->
+<AddDocumentDialog IsVisible="@isAddDocumentDialogVisible" OnDocumentAdded="OnDocumentAdded" IsVisibleChanged="@(val => isAddDocumentDialogVisible = val)" />
+
+@code {
     private IEnumerable<DocumentResponse>? _documents { get; set; } = new List<DocumentResponse>();
     private IEnumerable<HistoryResponse>? _histories { get; set; } = new List<HistoryResponse>();
+    private bool isAddDocumentDialogVisible = false;
     private Guid? selectedDocumentId;
 
     protected override async Task OnInitializedAsync()
     {
-        var documents = await _documentService.GetDocuments();
-        if (documents?.Count != 0)
-        {
-            _documents = documents;
-        }
+        await LoadDocuments();
     }
 
+    private async Task LoadDocuments()
+    {
+        _documents = await _documentService.GetDocuments();
+    }
+
+    // Show the add document dialog
+    private void ShowAddDocumentDialog()
+    {
+        isAddDocumentDialogVisible = true;
+    }
+
+    // Called when a new document is added
+    private async Task OnDocumentAdded(DocumentResponse newDocument)
+    {
+        await LoadDocuments();
+        isAddDocumentDialogVisible = false;
+    }
+
+    // Show the history for a selected document
     private async Task ShowHistories(Guid documentId)
     {
         if (selectedDocumentId == documentId)
         {
-            // Hide details if the same document is clicked again
+            // Hide history if same document is clicked again
             selectedDocumentId = null;
             _histories = null;
         }
         else
         {
-            // Show details for the selected document
             selectedDocumentId = documentId;
             _histories = await _documentService.GetHistories(documentId);
         }

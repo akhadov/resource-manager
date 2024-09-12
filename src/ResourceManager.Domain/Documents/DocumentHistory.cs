@@ -5,13 +5,11 @@ namespace ResourceManager.Domain.Documents;
 public sealed class DocumentHistory : Entity
 {
     private DocumentHistory(
-        Guid id,
         Guid documentId,
         Guid userId,
         string action,
         HistoryType type,
         DateTime createdAt)
-        : base(id)
     {
         DocumentId = documentId;
         UserId = userId;
@@ -35,7 +33,7 @@ public sealed class DocumentHistory : Entity
         HistoryType type,
         DateTime createdAt)
     {
-        return new DocumentHistory(Guid.NewGuid(), documentId, userId, action, type, createdAt);
+        return new DocumentHistory(documentId, userId, action, type, createdAt);
     }
 
 }

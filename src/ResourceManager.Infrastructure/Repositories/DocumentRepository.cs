@@ -23,30 +23,9 @@ internal sealed class DocumentRepository(ApplicationDbContext context) : IDocume
 
     public void Update(Document document)
     {
-        foreach (var history in document.Histories)
-        {
-            var trackedEntity = context.ChangeTracker.Entries<DocumentHistory>()
-                                       .FirstOrDefault(e => e.Entity.Id == history.Id);
+       
 
-            if (trackedEntity == null)
-            {
-                context.Histories.Attach(history);
-                context.Entry(history).State = EntityState.Modified;
-            }
-            else
-            {
-                trackedEntity.State = EntityState.Modified;
-            }
-        }
-
-        try
-        {
-            context.Documents.Update(document);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
+        context.Documents.Update(document);
     }
 
     public void Delete(Document document)

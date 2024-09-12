@@ -10,7 +10,6 @@ public sealed class User : Entity
         string username,
         Actor actor,
         Level level)
-        : base(id)
     {
         Name = name;
         Username = username;

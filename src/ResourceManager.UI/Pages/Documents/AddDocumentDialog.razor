@@ -1,0 +1,46 @@
+﻿@using ResourceManager.Application.Documents.CreateDocument
+@using ResourceManager.Application.Documents.GetDocuments
+@using ResourceManager.UI.Services.Interfaces
+@inject IDocumentService _documentService;
+<MudDialog MaxWidth="MaxWidth.Small" @bind-IsVisible="IsVisible">
+    <DialogContent>
+        <MudText Typo="Typo.h5">Add New Document</MudText>
+        <MudTextField Label="Title" @bind-Value="newDocumentTitle" Required="true" />
+        <MudTextField Label="Content" @bind-Value="newDocumentContent" Required="true" Multiline="true" Rows="4" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddDocument">Add</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="CloseDialog">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback<DocumentResponse> OnDocumentAdded { get; set; }
+
+    private string newDocumentTitle = string.Empty;
+    private string newDocumentContent = string.Empty;
+
+    private async Task AddDocument()
+    {
+
+        var newDocument = new CreateDocumentRequest(newDocumentTitle, newDocumentContent);
+        var result = await _documentService.AddDocument(newDocument);
+
+        if (result != null)
+        {
+            // Emit event to notify parent that a document was added
+            await OnDocumentAdded.InvokeAsync(result);
+        }
+
+        // Close the dialog
+        await CloseDialog();
+    }
+
+    private async Task CloseDialog()
+    {
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+}

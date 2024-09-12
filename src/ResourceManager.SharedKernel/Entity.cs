@@ -1,18 +1,17 @@
-﻿namespace ResourceManager.SharedKernel;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ResourceManager.SharedKernel;
 
 public abstract class Entity
 {
     private readonly List<IDomainEvent> _domainEvents = new();
 
-    protected Entity(Guid id)
-    {
-        Id = id;
-    }
-
     protected Entity()
     {
     }
 
+
+    [Key]
     public Guid Id { get; init; }
 
     public List<IDomainEvent> DomainEvents => _domainEvents.ToList();
