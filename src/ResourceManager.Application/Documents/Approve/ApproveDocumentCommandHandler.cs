@@ -19,10 +19,10 @@ internal sealed class ApproveDocumentCommandHandler(
 
         var document = await documentRepository.GetByIdAsync(request.DocumentId, cancellationToken);
 
-        if (user.Id == document.CreatorId) 
-        {
-            throw new Exception("Authot can't approve document");
-        }
+        //if (user.Id == document.CreatorId) 
+        //{
+        //    throw new Exception("Authot can't approve document");
+        //}
 
         document.Approve(user.Id, user.Level, Level.FinalApprover, dateTimeProvider.UtcNow);
 

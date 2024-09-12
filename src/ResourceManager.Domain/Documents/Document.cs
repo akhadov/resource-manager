@@ -82,24 +82,11 @@ public sealed class Document : Entity
 
     public void Approve(Guid approverId, Level approverLevel, Level? nextApproverLevel, DateTime updatedAt)
     {
-        if (Status != DocumentStatus.PendingApproval)
-            throw new InvalidOperationException("Only pending documents can be approved.");
-
-        if (approverLevel != CurrentApproverLevel)
-            throw new InvalidOperationException("Approver does not have the required level for this step.");
-
+        Status = DocumentStatus.Approved;
+        CurrentApproverLevel = null;
+        CurrentApproverLevel = nextApproverLevel;
         UpdatedAt = updatedAt;
         AddHistory(approverId, $"Document approved by {approverLevel}", HistoryType.Approval, updatedAt);
-
-        if (nextApproverLevel == null)
-        {
-            Status = DocumentStatus.Approved;
-            CurrentApproverLevel = null;
-        }
-        else
-        {
-            CurrentApproverLevel = nextApproverLevel;
-        }
     }
 
     public void Reject(Guid rejectorId, string reason, DateTime updatedAt)
