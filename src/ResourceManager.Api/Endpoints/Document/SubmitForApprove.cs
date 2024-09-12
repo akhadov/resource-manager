@@ -10,7 +10,7 @@ public class SubmitForApprove : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("documents/{documentId}/users/{userId}", async (
+        app.MapPost("documents/submit/{documentId}/users/{userId}", async (
             Guid documentId,
             Guid userId,
             ISender sender,

@@ -1,22 +1,28 @@
 ﻿using MediatR;
 using ResourceManager.Api.Extensions;
 using ResourceManager.Api.Infrastructure;
-using ResourceManager.Application.Documents.Approve;
+using ResourceManager.Application.Documents.Reject;
 using ResourceManager.SharedKernel;
 
 namespace ResourceManager.Api.Endpoints.Document;
 
-public class ApproveDocument : IEndpoint
+public class RejectDocument : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPut("documents/approve/{documentId}/users/{userId}", async (
+        app.MapPut("documents/reject/{documentId}/users/{userId}", async (
             Guid documentId,
             Guid userId,
+            RejectDocumentRequest request,
             ISender sender,
             CancellationToken cancellationToken) =>
         {
-            Result result = await sender.Send(new ApproveDocumentCommand(documentId, userId), cancellationToken);
+            var command = new RejectDocumentCommand(
+                documentId,
+                userId,
+                request.Reason);
+
+            Result result = await sender.Send(command, cancellationToken);
 
             return result.Match(Results.NoContent, CustomResults.Problem);
         })
