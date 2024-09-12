@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -71,8 +72,8 @@ namespace ResourceManager.Infrastructure.Database.Migrations
                 {
                     table.PrimaryKey("pk_histories", x => x.id);
                     table.ForeignKey(
-                        name: "fk_histories_documents_id",
-                        column: x => x.id,
+                        name: "fk_histories_documents_document_id",
+                        column: x => x.document_id,
                         principalSchema: "public",
                         principalTable: "documents",
                         principalColumn: "id",
@@ -93,10 +94,23 @@ namespace ResourceManager.Infrastructure.Database.Migrations
                 column: "creator_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_histories_document_id",
+                schema: "public",
+                table: "histories",
+                column: "document_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_histories_user_id",
                 schema: "public",
                 table: "histories",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_users_username",
+                schema: "public",
+                table: "users",
+                column: "username",
+                unique: true);
         }
 
         /// <inheritdoc />

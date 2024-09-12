@@ -12,8 +12,8 @@ using ResourceManager.Infrastructure.Database;
 namespace ResourceManager.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240911105550_Change_Foreignkey")]
-    partial class Change_Foreignkey
+    [Migration("20240912064907_Create_Database")]
+    partial class Create_Database
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
