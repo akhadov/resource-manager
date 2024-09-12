@@ -3,6 +3,7 @@
 @using ResourceManager.Application.DocumentHistories.GetDocumentHistory
 @using ResourceManager.Application.Documents.GetDocuments
 @using ResourceManager.UI.Services.Interfaces
+@inject IDialogService DialogService
 @inject IDocumentService _documentService
 
 <MudText Typo="Typo.h3">Documents</MudText>
@@ -13,7 +14,7 @@
         <!-- Placeholder for title or filters if needed -->
     </MudItem>
     <MudItem xs="2">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowAddDocumentDialog">Add Document</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddDocumentDialog">Add Document</MudButton>
     </MudItem>
 </MudGrid>
 
@@ -80,13 +81,10 @@
     </ChildRowContent>
 </MudTable>
 
-<!-- Include the AddDocumentDialog component -->
-<AddDocumentDialog IsVisible="@isAddDocumentDialogVisible" OnDocumentAdded="OnDocumentAdded" IsVisibleChanged="@(val => isAddDocumentDialogVisible = val)" />
-
 @code {
     private IEnumerable<DocumentResponse>? _documents { get; set; } = new List<DocumentResponse>();
     private IEnumerable<HistoryResponse>? _histories { get; set; } = new List<HistoryResponse>();
-    private bool isAddDocumentDialogVisible = false;
+    
     private Guid? selectedDocumentId;
 
     protected override async Task OnInitializedAsync()
@@ -100,16 +98,17 @@
     }
 
     // Show the add document dialog
-    private void ShowAddDocumentDialog()
+    private Task AddDocumentDialog()
     {
-        isAddDocumentDialogVisible = true;
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        return DialogService.ShowAsync<AddDocumentDialog>("Simple Dialog", options);
     }
 
     // Called when a new document is added
     private async Task OnDocumentAdded(DocumentResponse newDocument)
     {
         await LoadDocuments();
-        isAddDocumentDialogVisible = false;
     }
 
     // Show the history for a selected document

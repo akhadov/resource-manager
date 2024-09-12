@@ -2,7 +2,8 @@
 @using ResourceManager.Application.Documents.GetDocuments
 @using ResourceManager.UI.Services.Interfaces
 @inject IDocumentService _documentService;
-<MudDialog MaxWidth="MaxWidth.Small" @bind-IsVisible="IsVisible">
+
+<MudDialog>
     <DialogContent>
         <MudText Typo="Typo.h5">Add New Document</MudText>
         <MudTextField Label="Title" @bind-Value="newDocumentTitle" Required="true" />
@@ -15,9 +16,9 @@
 </MudDialog>
 
 @code {
-    [Parameter] public bool IsVisible { get; set; }
-    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
     [Parameter] public EventCallback<DocumentResponse> OnDocumentAdded { get; set; }
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
 
     private string newDocumentTitle = string.Empty;
     private string newDocumentContent = string.Empty;
@@ -38,9 +39,5 @@
         await CloseDialog();
     }
 
-    private async Task CloseDialog()
-    {
-        IsVisible = false;
-        await IsVisibleChanged.InvokeAsync(false);
-    }
+    private async Task CloseDialog() => MudDialog.Cancel();
 }
