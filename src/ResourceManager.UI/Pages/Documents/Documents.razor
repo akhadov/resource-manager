@@ -34,6 +34,8 @@
         <MudTh>Status</MudTh>
         <MudTh>CreatedAt</MudTh>
         <MudTh>UpdatedAt</MudTh>
+        <MudTh>CurrentLevel</MudTh>
+        <MudTh>NextLevel</MudTh>
         <MudTh>Actions</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -43,6 +45,8 @@
         <MudTd DataLabel="Status">@context.Status</MudTd>
         <MudTd DataLabel="CreatedAt">@context.CreatedAt</MudTd>
         <MudTd DataLabel="UpdatedAt">@context.UpdatedAt</MudTd>
+        <MudTd DataLabel="CurrentLevel">@context.CurrentLevel</MudTd>
+        <MudTd DataLabel="NextLevel">@context.NextLevel</MudTd>
         <MudTd>
             <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="@(async () => await ShowHistories(context.Id))">
                 @(selectedDocumentId == context.Id ? "Hide" : "Show") History

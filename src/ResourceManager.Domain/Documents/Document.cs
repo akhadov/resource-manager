@@ -31,6 +31,7 @@ public sealed class Document : Entity
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public Level? CurrentApproverLevel { get; private set; }
+    public Level? NextApproverLevel { get; private set; }
     public List<DocumentHistory> Histories => _histories.ToList();
 
     public static Document Create(
@@ -76,17 +77,44 @@ public sealed class Document : Entity
             throw new InvalidOperationException("Only draft documents can be submitted for approval.");
 
         Status = DocumentStatus.PendingApproval;
+        CurrentApproverLevel = Level.Author;
+        NextApproverLevel = Level.Reviewer;
 
         AddHistory(userId, "Submitted for approval", HistoryType.StatusChange, createdAt);
     }
 
-    public void Approve(Guid approverId, Level approverLevel, Level? nextApproverLevel, DateTime updatedAt)
+    public void Approve(Guid approverId, Level approverLevel, DateTime updatedAt)
     {
+        //if (Status != DocumentStatus.PendingApproval && Status != DocumentStatus.Approved)
+        //{
+        //    throw new InvalidOperationException("Only pending approval or approved documents can be approved.");
+        //}
+
+        //if (CurrentApproverLevel != approverLevel)
+        //{
+        //    throw new InvalidOperationException($"Approval can only be done by the current approver level: {CurrentApproverLevel}.");
+        //}
+
+        Level? nextApproverLevel = GetNextApproverLevel(approverLevel);
+
         Status = DocumentStatus.Approved;
-        CurrentApproverLevel = null;
-        CurrentApproverLevel = nextApproverLevel;
+        CurrentApproverLevel = approverLevel;
+        NextApproverLevel = nextApproverLevel;
         UpdatedAt = updatedAt;
         AddHistory(approverId, $"Document approved by {approverLevel}", HistoryType.Approval, updatedAt);
+    }
+
+    private Level? GetNextApproverLevel(Level currentLevel)
+    {
+        return currentLevel switch
+        {
+            Level.Author => Level.Reviewer,
+            Level.Reviewer => Level.Manager,
+            Level.Manager => Level.Executive,
+            Level.Executive => Level.FinalApprover,
+            Level.FinalApprover => Level.FinalApprover,
+            _ => throw new InvalidOperationException("Invalid approver level.")
+        };
     }
 
     public void Reject(Guid rejectorId, string reason, DateTime updatedAt)

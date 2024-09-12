@@ -26,7 +26,9 @@ namespace ResourceManager.Application.Documents.GetDocuments
                                         document.Content,
                                         document.Status,
                                         document.CreatedAt,
-                                        document.UpdatedAt);
+                                        document.UpdatedAt,
+                                        document.CurrentApproverLevel,
+                                        document.NextApproverLevel);
 
             return documentResponses.ToList();
         }

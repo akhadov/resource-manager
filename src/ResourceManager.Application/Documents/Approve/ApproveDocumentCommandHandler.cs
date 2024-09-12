@@ -17,14 +17,20 @@ internal sealed class ApproveDocumentCommandHandler(
     {
         var user = await userRepository.GetByIdAsync(request.ApproverId, cancellationToken);
 
+        if (user.Actor != Actor.Approver)
+        {
+            throw new InvalidOperationException("Only approvers can approve documents.");
+        }
+
         var document = await documentRepository.GetByIdAsync(request.DocumentId, cancellationToken);
 
-        //if (user.Id == document.CreatorId) 
-        //{
-        //    throw new Exception("Authot can't approve document");
-        //}
 
-        document.Approve(user.Id, user.Level, Level.FinalApprover, dateTimeProvider.UtcNow);
+        if (user.Level != document.NextApproverLevel)
+        {
+            throw new InvalidOperationException($"The document must be approved by the next approver: {document.NextApproverLevel}.");
+        }
+
+        document.Approve(user.Id, user.Level, dateTimeProvider.UtcNow);
 
         documentRepository.Update(document);
 
