@@ -1,0 +1,37 @@
+﻿@using ResourceManager.Application.Documents.UpdateDocument
+@using ResourceManager.UI.Services.Interfaces
+@inject IDocumentService _documentService
+<MudDialog>
+    <MudTextField @bind-Value="Title" Label="Title" Required="true" />
+    <MudTextField @bind-Value="Content" Label="Content" Required="true" />
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdateDocument">Save</MudButton>
+    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Guid DocumentId { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Content { get; set; }
+
+    private async Task UpdateDocument()
+    {
+        var updateRequest = new UpdateDocumentRequest(Title, Content);
+        var success = await _documentService.UpdateDocuments(DocumentId, updateRequest);
+
+        if (success)
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+            // Handle failure case
+        }
+    }
+
+    void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

@@ -114,24 +114,24 @@ public class DocumentService : IDocumentService
     }
 
 
-    public async Task<bool> UpdateDocument(Guid documentId, string title, string content)
-    {
-        try
-        {
-            var command = new UpdateDocumentCommand(documentId, title, content);
+    //public async Task<bool> UpdateDocument(Guid documentId, string title, string content)
+    //{
+    //    try
+    //    {
+    //        var command = new UpdateDocumentCommand(documentId, title, content);
 
-            var documentjson = new StringContent(JsonSerializer.Serialize(command), Encoding.UTF8, "application/json");
+    //        var documentjson = new StringContent(JsonSerializer.Serialize(command), Encoding.UTF8, "application/json");
 
-            var response = await _http.PutAsync("documents", documentjson);
+    //        var response = await _http.PutAsync("documents", documentjson);
 
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
-    }
+    //        return response.IsSuccessStatusCode;
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        Console.WriteLine(e);
+    //        throw;
+    //    }
+    //}
 
     public async Task<bool> UpdateDocuments(Guid documentId, UpdateDocumentRequest updateDocumentRequest)
     {
