@@ -8,9 +8,8 @@ public interface IDocumentService
 {
     Task<List<Application.Documents.GetDocuments.DocumentResponse>?> GetDocuments();
     Task<Application.Documents.GetDocument.DocumentResponse> GetDocument(Guid id);
-    Task<Application.Documents.GetDocuments.DocumentResponse> AddDocument(CreateDocumentRequest document);
+    Task<Application.Documents.GetDocuments.DocumentResponse> AddDocument(Guid userId, CreateDocumentRequest document);
     Task<bool> UpdateDocuments(Guid documentId, UpdateDocumentRequest updateDocumentRequest);
-    //Task<bool> UpdateDocument(Guid documentId, string title, string content);
     Task<bool> DeleteDocument(Guid id);
 
     Task<List<HistoryResponse>> GetHistories(Guid documentId);

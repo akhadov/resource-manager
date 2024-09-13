@@ -21,13 +21,13 @@ public class DocumentService : IDocumentService
             PropertyNameCaseInsensitive = true
         };
     }
-    public async Task<Application.Documents.GetDocuments.DocumentResponse> AddDocument(CreateDocumentRequest document)
+    public async Task<Application.Documents.GetDocuments.DocumentResponse> AddDocument(Guid userId, CreateDocumentRequest document)
     {
         try
         {
             var documentjson = new StringContent(JsonSerializer.Serialize(document), Encoding.UTF8, "application/json");
 
-            var response = await _http.PostAsync("documents", documentjson);
+            var response = await _http.PostAsync($"documents/{userId}", documentjson);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -97,41 +97,18 @@ public class DocumentService : IDocumentService
     {
         try
         {
-            // Define the URL for fetching document histories
             var apiResponse = await _http.GetStreamAsync($"documents/{documentId}/histories");
 
-            // Deserialize the response into a list of HistoryResponse
             var histories = await JsonSerializer.DeserializeAsync<List<HistoryResponse>>(apiResponse, _serializerOptions);
 
             return histories;
         }
         catch (Exception e)
         {
-            // Log the exception and rethrow or return an empty list
             Console.WriteLine(e);
             throw;
         }
     }
-
-
-    //public async Task<bool> UpdateDocument(Guid documentId, string title, string content)
-    //{
-    //    try
-    //    {
-    //        var command = new UpdateDocumentCommand(documentId, title, content);
-
-    //        var documentjson = new StringContent(JsonSerializer.Serialize(command), Encoding.UTF8, "application/json");
-
-    //        var response = await _http.PutAsync("documents", documentjson);
-
-    //        return response.IsSuccessStatusCode;
-    //    }
-    //    catch (Exception e)
-    //    {
-    //        Console.WriteLine(e);
-    //        throw;
-    //    }
-    //}
 
     public async Task<bool> UpdateDocuments(Guid documentId, UpdateDocumentRequest updateDocumentRequest)
     {
