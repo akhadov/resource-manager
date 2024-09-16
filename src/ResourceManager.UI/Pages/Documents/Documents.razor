@@ -2,23 +2,39 @@
 @using ResourceManager.Application.Documents.CreateDocument
 @using ResourceManager.Application.DocumentHistories.GetDocumentHistory
 @using ResourceManager.Application.Documents.GetDocuments
+@using ResourceManager.Application.Users.GetUser
 @using ResourceManager.UI.Services.Interfaces
 @inject IDialogService DialogService
 @inject IDocumentService _documentService
+@inject IUserService _userService
+
+
+@if (_users != null)
+{
+    <MudSelect T="Guid?" Label="Select User" Value="selectedUserId" ValueChanged="OnUserSelected">
+        @foreach (var user in _users)
+        {
+            <MudSelectItem T="Guid?" Value="@user.Id">@user.Name (@user.Username)</MudSelectItem>
+        }
+    </MudSelect>
+}
+
+
+@if (selectedUser != null)
+{
+    <MudText Typo="Typo.h6">Selected User: @selectedUser.Name (@selectedUser.Username)</MudText>
+}
 
 <MudText Typo="Typo.h3">Documents</MudText>
 
-<!-- Add Document Button (top right) -->
 <MudGrid>
     <MudItem xs="10">
-        <!-- Placeholder for title or filters if needed -->
     </MudItem>
     <MudItem xs="2">
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddDocumentDialog">Add Document</MudButton>
     </MudItem>
 </MudGrid>
 
-<!-- Documents Table -->
 <MudTable Items="_documents" Hover="true" Bordered="true" Striped="true">
     <ColGroup>
         <col style="width:300px;" /> <!-- Username -->
@@ -49,18 +65,12 @@
         <MudTd DataLabel="CurrentLevel">@context.CurrentLevel</MudTd>
         <MudTd DataLabel="NextLevel">@context.NextLevel</MudTd>
         <MudTd>
-            <!-- Update Icon Button -->
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(async () => await UpdateDocumentDialog(context.Id, context.Title, context.Content))" Color="Color.Primary" />
-
-            <!-- Delete Icon Button -->
             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" OnClick="@(async () => await DeleteDocument(context.Id))" Color="Color.Error" />
-
-            <!-- History Icon Button -->
             <MudIconButton Icon="@Icons.Material.Filled.History" Size="Size.Small" OnClick="@(async () => await ShowHistories(context.Id))" Color="Color.Default" />
         </MudTd>
     </RowTemplate>
 
-    <!-- Display History under the selected document -->
     <ChildRowContent>
         @if (selectedDocumentId == context.Id && _histories != null)
         {
@@ -89,11 +99,15 @@
 @code {
     private IEnumerable<DocumentResponse>? _documents { get; set; } = new List<DocumentResponse>();
     private IEnumerable<HistoryResponse>? _histories { get; set; } = new List<HistoryResponse>();
+    private List<UserResponse>? _users { get; set; }
 
     private Guid? selectedDocumentId;
+    private Guid? selectedUserId;
+    private UserResponse? selectedUser;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadUsers();
         await LoadDocuments();
     }
 
@@ -102,14 +116,28 @@
         _documents = await _documentService.GetDocuments();
     }
 
-    // Show the add document dialog
+    private async Task LoadUsers()
+    {
+        _users = await _userService.GetUsers();
+        StateHasChanged();
+    }
+
+    private async Task OnUserSelected(Guid? userId)
+    {
+        selectedUserId = userId;
+        if (selectedUserId.HasValue)
+        {
+            selectedUser = await _userService.GetUser(selectedUserId.Value);
+        }
+    }
+
+
     private Task AddDocumentDialog()
     {
         var options = new DialogOptions { CloseOnEscapeKey = true };
         return DialogService.ShowAsync<AddDocumentDialog>("Add Document", options);
     }
 
-    // Show the update document dialog
     private async Task UpdateDocumentDialog(Guid documentId, string title, string content)
     {
         var parameters = new DialogParameters
@@ -130,12 +158,10 @@
         }
     }
 
-    // Show the history for a selected document
     private async Task ShowHistories(Guid documentId)
     {
         if (selectedDocumentId == documentId)
         {
-            // Hide history if same document is clicked again
             selectedDocumentId = null;
             _histories = null;
         }
@@ -146,7 +172,6 @@
         }
     }
 
-    // Delete the document
     private async Task DeleteDocument(Guid documentId)
     {
         var confirmed = await DialogService.ShowMessageBox(
@@ -160,10 +185,6 @@
             if (success)
             {
                 await LoadDocuments();
-            }
-            else
-            {
-                // Handle failure case
             }
         }
     }

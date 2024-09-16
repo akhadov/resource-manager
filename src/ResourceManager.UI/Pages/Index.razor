@@ -1,0 +1,108 @@
+﻿@page "/index"
+@using System.ComponentModel.DataAnnotations
+@using ResourceManager.Application.Documents.CreateDocument
+@using ResourceManager.Application.Users.GetUser
+@using ResourceManager.UI.Services.Interfaces
+@inject IDocumentService DocumentService
+@inject IUserService UserService
+@inject ISnackbar Snackbar
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Add New Document</MudText>
+
+    <MudSelect T="Guid" Label="Select User" @bind-Value="selectedUserId" Required="true" RequiredError="Please select a user">
+        @foreach (var user in users)
+        {
+            <MudSelectItem Value="@user.Id">@user.Name (@user.Username)</MudSelectItem>
+        }
+    </MudSelect>
+
+    <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <MudCard>
+            <MudCardContent>
+                <MudTextField Label="Title" Required="true" RequiredError="Title is required"
+                              @bind-Value="model.Title" For="@(() => model.Title)" />
+                <MudTextField Label="Content" Class="mt-3" Lines="5" Required="true" RequiredError="Content is required"
+                              @bind-Value="model.Content" For="@(() => model.Content)" />
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="@(!IsFormValid() || isSubmitting)">
+                    @if (isSubmitting)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                        <MudText Class="ms-2">Submitting</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Add Document</MudText>
+                    }
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </EditForm>
+</MudPaper>
+
+@code {
+    private CreateDocumentForm model = new CreateDocumentForm();
+    private List<UserResponse> users = new List<UserResponse>();
+    private Guid selectedUserId;
+    private bool isSubmitting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await UserService.GetUsers() ?? new List<UserResponse>();
+        if (users.Any()) selectedUserId = users.First().Id;
+    }
+
+    public class CreateDocumentForm
+    {
+        [Required(ErrorMessage = "Title is required")]
+        [StringLength(100, ErrorMessage = "Title must be less than 100 characters")]
+        public string Title { get; set; }
+
+        [Required(ErrorMessage = "Content is required")]
+        public string Content { get; set; }
+    }
+
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(model.Title) &&
+               !string.IsNullOrWhiteSpace(model.Content) &&
+               selectedUserId != Guid.Empty;
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        if (isSubmitting) return;
+
+        isSubmitting = true;
+        StateHasChanged();
+
+        try
+        {
+            var createDocumentRequest = new CreateDocumentRequest(model.Title, model.Content);
+            var result = await DocumentService.AddDocument(selectedUserId, createDocumentRequest);
+
+            if (result != null)
+            {
+                Snackbar.Add("Document added successfully", Severity.Success);
+                model = new CreateDocumentForm();
+            }
+            else
+            {
+                Snackbar.Add("Failed to add document", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"An error occurred: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+}

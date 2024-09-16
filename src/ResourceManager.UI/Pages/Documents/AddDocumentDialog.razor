@@ -16,7 +16,7 @@
 </MudDialog>
 
 @code {
-    private Guid userId = Guid.Parse("136e04ff-5343-459f-b8d9-b4b3edbcbc67"); // Parse your specific userId
+    [Parameter] public Guid UserId { get; set; } // Receive UserId from parent
     [Parameter] public EventCallback<DocumentResponse> OnDocumentAdded { get; set; }
     [CascadingParameter]
     private MudDialogInstance MudDialog { get; set; }
@@ -26,8 +26,9 @@
 
     private async Task AddDocument()
     {
+        // Create a new document request with the title and content
         var newDocument = new CreateDocumentRequest(newDocumentTitle, newDocumentContent);
-        var result = await _documentService.AddDocument(userId, newDocument); // Use the specific userId here
+        var result = await _documentService.AddDocument(UserId, newDocument); // Use the passed UserId
 
         if (result != null)
         {
