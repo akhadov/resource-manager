@@ -10,7 +10,7 @@ public class ApproveDocument : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPut("documents/approve/{documentId}/users/{userId}", async (
+        app.MapPut("documents/{documentId}/approve/{userId}", async (
             Guid documentId,
             Guid userId,
             ISender sender,

@@ -16,8 +16,7 @@
 </MudDialog>
 
 @code {
-    [Parameter] public Guid UserId { get; set; } // Receive UserId from parent
-    [Parameter] public EventCallback<DocumentResponse> OnDocumentAdded { get; set; }
+    [Parameter] public Guid? UserId { get; set; } // Ensure this parameter is passed from the parent component
     [CascadingParameter]
     private MudDialogInstance MudDialog { get; set; }
 
@@ -26,14 +25,11 @@
 
     private async Task AddDocument()
     {
-        // Create a new document request with the title and content
-        var newDocument = new CreateDocumentRequest(newDocumentTitle, newDocumentContent);
-        var result = await _documentService.AddDocument(UserId, newDocument); // Use the passed UserId
-
-        if (result != null)
+        if (UserId.HasValue)
         {
-            // Emit event to notify parent that a document was added
-            await OnDocumentAdded.InvokeAsync(result);
+            // Create a new document request with the title and content
+            var newDocument = new CreateDocumentRequest(newDocumentTitle, newDocumentContent);
+            var result = await _documentService.AddDocument(UserId.Value, newDocument); // Ensure UserId is used correctly
         }
 
         // Close the dialog

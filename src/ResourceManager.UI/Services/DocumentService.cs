@@ -1,5 +1,6 @@
 ﻿using ResourceManager.Application.DocumentHistories.GetDocumentHistory;
 using ResourceManager.Application.Documents.CreateDocument;
+using ResourceManager.Application.Documents.Reject;
 using ResourceManager.Application.Documents.UpdateDocument;
 using ResourceManager.UI.Services.Interfaces;
 using System.Net.Http.Json;
@@ -27,7 +28,7 @@ public class DocumentService : IDocumentService
         {
             var documentjson = new StringContent(JsonSerializer.Serialize(document), Encoding.UTF8, "application/json");
 
-            var response = await _http.PostAsync($"documents/{userId}", documentjson);
+            var response = await _http.PostAsync($"documents/users/{userId}", documentjson);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -109,7 +110,7 @@ public class DocumentService : IDocumentService
             throw;
         }
     }
-
+    
     public async Task<bool> UpdateDocuments(Guid documentId, UpdateDocumentRequest updateDocumentRequest)
     {
         try
@@ -117,6 +118,71 @@ public class DocumentService : IDocumentService
             var documentJson = new StringContent(JsonSerializer.Serialize(updateDocumentRequest), Encoding.UTF8, "application/json");
 
             var response = await _http.PutAsync($"documents/{documentId}", documentJson);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error response from API: {responseContent}");
+            }
+
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+    
+    public async Task<bool> SubmitForApproval(Guid documentId, Guid userId)
+    {
+        try
+        {
+            var response = await _http.PostAsync($"documents/{documentId}/submit/{userId}", null);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error response from API: {responseContent}");
+            }
+
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<bool> ApproveDocument(Guid documentId, Guid userId)
+    {
+        try
+        {
+            var response = await _http.PostAsync($"documents/{documentId}/approve/{userId}", null);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error response from API: {responseContent}");
+            }
+
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<bool> RejectDocuemt(Guid documentId, Guid userId, RejectDocumentRequest reason)
+    {
+        try
+        {
+            var rejectDocumentJson = new StringContent(JsonSerializer.Serialize(reason), Encoding.UTF8, "application/json");
+
+            var response = await _http.PostAsync($"documents/{documentId}/reject/{userId}", rejectDocumentJson);
 
             if (!response.IsSuccessStatusCode)
             {

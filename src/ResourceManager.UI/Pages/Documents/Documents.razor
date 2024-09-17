@@ -3,8 +3,11 @@
 @using ResourceManager.Application.DocumentHistories.GetDocumentHistory
 @using ResourceManager.Application.Documents.GetDocuments
 @using ResourceManager.Application.Users.GetUser
+@using ResourceManager.Domain.Documents
+@using ResourceManager.Domain.Users
 @using ResourceManager.UI.Services.Interfaces
 @inject IDialogService DialogService
+@inject NavigationManager _navigationManager
 @inject IDocumentService _documentService
 @inject IUserService _userService
 
@@ -65,7 +68,8 @@
         <MudTd DataLabel="CurrentLevel">@context.CurrentLevel</MudTd>
         <MudTd DataLabel="NextLevel">@context.NextLevel</MudTd>
         <MudTd>
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(async () => await UpdateDocumentDialog(context.Id, context.Title, context.Content))" Color="Color.Primary" />
+            <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye" Size="Size.Small" OnClick="() => NavigateToDocumentPage(context)" Color="Color.Info" />
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="UpdateDocumentDialog" Color="Color.Primary" />
             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" OnClick="@(async () => await DeleteDocument(context.Id))" Color="Color.Error" />
             <MudIconButton Icon="@Icons.Material.Filled.History" Size="Size.Small" OnClick="@(async () => await ShowHistories(context.Id))" Color="Color.Default" />
         </MudTd>
@@ -102,7 +106,7 @@
     private List<UserResponse>? _users { get; set; }
 
     private Guid? selectedDocumentId;
-    private Guid? selectedUserId;
+    public Guid? selectedUserId;
     private UserResponse? selectedUser;
 
     protected override async Task OnInitializedAsync()
@@ -114,6 +118,12 @@
     private async Task LoadDocuments()
     {
         _documents = await _documentService.GetDocuments();
+
+        if (selectedUser != null && selectedUser.Actor == Actor.Approver)
+        {
+            // Filter out documents with status 'Draft' if the user is an approver
+            _documents = _documents?.Where(doc => doc.Status != DocumentStatus.Draft);
+        }
     }
 
     private async Task LoadUsers()
@@ -128,23 +138,30 @@
         if (selectedUserId.HasValue)
         {
             selectedUser = await _userService.GetUser(selectedUserId.Value);
+            await LoadDocuments();
         }
     }
 
 
     private Task AddDocumentDialog()
     {
+        var parameters = new DialogParameters
+    {
+        { "UserId", selectedUserId } // Pass the UserId as a string key directly
+    };
+
         var options = new DialogOptions { CloseOnEscapeKey = true };
-        return DialogService.ShowAsync<AddDocumentDialog>("Add Document", options);
+        return DialogService.ShowAsync<AddDocumentDialog>("Add Document", parameters, options);
     }
 
-    private async Task UpdateDocumentDialog(Guid documentId, string title, string content)
+
+
+
+    private async Task UpdateDocumentDialog()
     {
         var parameters = new DialogParameters
         {
-            { "DocumentId", documentId },
-            { "Title", title },
-            { "Content", content }
+            { "DocumentId", selectedDocumentId }
         };
 
         var options = new DialogOptions { CloseOnEscapeKey = true };
@@ -187,5 +204,10 @@
                 await LoadDocuments();
             }
         }
+    }
+
+    private void NavigateToDocumentPage(DocumentResponse document)
+    {
+        _navigationManager.NavigateTo($"/document/{document.Id}");
     }
 }

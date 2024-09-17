@@ -2,36 +2,37 @@
 @using ResourceManager.UI.Services.Interfaces
 @inject IDocumentService _documentService
 <MudDialog>
-    <MudTextField @bind-Value="Title" Label="Title" Required="true" />
-    <MudTextField @bind-Value="Content" Label="Content" Required="true" />
-
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdateDocument">Save</MudButton>
-    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+    <DialogContent>
+        <MudText Typo="Typo.h5">Update Document</MudText>
+        <MudTextField Label="Title" @bind-Value="newDocumentTitle" Required="true" />
+        <MudTextField Label="Content" @bind-Value="newDocumentContent" Required="true" Multiline="true" Rows="4" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdateDocument">Save</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseDialog">Cancel</MudButton>
+    </DialogActions>
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-    [Parameter] public Guid DocumentId { get; set; }
-    [Parameter] public string Title { get; set; }
-    [Parameter] public string Content { get; set; }
+    [Parameter] public Guid? DocumentId { get; set; }
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+
+    private string newDocumentTitle = string.Empty;
+    private string newDocumentContent = string.Empty;
 
     private async Task UpdateDocument()
     {
-        var updateRequest = new UpdateDocumentRequest(Title, Content);
-        var success = await _documentService.UpdateDocuments(DocumentId, updateRequest);
+        if (DocumentId.HasValue)
+        {
+            // Create a new document request with the title and content
+            var newDocument = new UpdateDocumentRequest(newDocumentTitle, newDocumentContent);
+            var result = await _documentService.UpdateDocuments(DocumentId.Value, newDocument); // Ensure UserId is used correctly
+        }
 
-        if (success)
-        {
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        else
-        {
-            // Handle failure case
-        }
+        // Close the dialog
+        await CloseDialog();
     }
 
-    void Cancel()
-    {
-        MudDialog.Cancel();
-    }
+    private async Task CloseDialog() => MudDialog.Cancel();
 }

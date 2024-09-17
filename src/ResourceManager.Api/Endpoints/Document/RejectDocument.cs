@@ -10,7 +10,7 @@ public class RejectDocument : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPut("documents/reject/{documentId}/users/{userId}", async (
+        app.MapPut("documents/{documentId}/reject/{userId}", async (
             Guid documentId,
             Guid userId,
             RejectDocumentRequest request,

@@ -1,5 +1,6 @@
 ﻿using ResourceManager.Application.DocumentHistories.GetDocumentHistory;
 using ResourceManager.Application.Documents.CreateDocument;
+using ResourceManager.Application.Documents.Reject;
 using ResourceManager.Application.Documents.UpdateDocument;
 
 namespace ResourceManager.UI.Services.Interfaces;
@@ -13,4 +14,8 @@ public interface IDocumentService
     Task<bool> DeleteDocument(Guid id);
 
     Task<List<HistoryResponse>> GetHistories(Guid documentId);
+
+    Task<bool> SubmitForApproval(Guid documentId, Guid userId);
+    Task<bool> ApproveDocument(Guid documentId, Guid userId);
+    Task<bool> RejectDocuemt(Guid documentId, Guid userId, RejectDocumentRequest reason);
 }
