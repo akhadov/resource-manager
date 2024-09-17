@@ -5,6 +5,7 @@ namespace ResourceManager.Application.Documents.GetDocument;
 public sealed record DocumentResponse(
     Guid Id,
     Guid CreatorId,
+    string Username,
     string Title,
     string Content,
     DocumentStatus Status,

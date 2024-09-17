@@ -10,13 +10,12 @@ public class GetDocument : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("documents/{documentId}/users/{userId}", async (
+        app.MapGet("documents/{documentId}", async (
             Guid documentId,
-            Guid userId,
             ISender sender,
             CancellationToken cancellationToken) =>
         {
-            Result<DocumentResponse> result = await sender.Send(new GetDocumentQuery(documentId, userId), cancellationToken);
+            Result<DocumentResponse> result = await sender.Send(new GetDocumentQuery(documentId), cancellationToken);
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })

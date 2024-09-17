@@ -8,42 +8,19 @@ namespace ResourceManager.Application.Documents.GetDocument;
 internal sealed class GetDocumentQueryHandler(
     IDocumentRepository documentRepository,
     IDocumentHistoryRepository documentHistoryRepository,
-    IUserRepository userRepository) // Add repository for document histories
+    IUserRepository userRepository)
     : IQueryHandler<GetDocumentQuery, DocumentResponse>
 {
     public async Task<Result<DocumentResponse>> Handle(GetDocumentQuery request, CancellationToken cancellationToken)
     {
-        // Retrieve the document
         var document = await documentRepository.GetByIdAsync(request.DocumentId, cancellationToken);
 
-        var user = await userRepository.GetByIdAsync(request.UserId, cancellationToken);
+        var user = await userRepository.GetByIdAsync(document.CreatorId, cancellationToken);
 
-        if (document.Status == DocumentStatus.PendingApproval)
-        {
-            // User can view if their level is at or below the current approver level
-            if (!document.CurrentApproverLevel.HasValue || user.Level <= document.CurrentApproverLevel.Value)
-            {
-                // Continue to create response if access is granted
-            }
-            else
-            {
-                throw new Exception("User does not have the required level to view this document.");
-            }
-        }
-        else if (document.Status == DocumentStatus.Approved)
-        {
-            // Document is approved, so any user can view it
-        }
-        else
-        {
-            throw new Exception("Document status is not accessible.");
-        }
-
-
-        // Map the document histories to the response model
         var documentHistoryResponses = document.Histories.Select(history => new DocumentHistoryResponse(
             history.DocumentId,
             history.UserId,
+            user.Name,
             history.Action,
             history.Type,
             history.CreatedAt
@@ -53,6 +30,7 @@ internal sealed class GetDocumentQueryHandler(
         var result = new DocumentResponse(
             document.Id,
             document.CreatorId,
+            user.Username,
             document.Title,
             document.Content,
             document.Status,

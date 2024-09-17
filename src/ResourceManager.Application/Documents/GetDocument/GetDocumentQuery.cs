@@ -3,5 +3,4 @@
 namespace ResourceManager.Application.Documents.GetDocument;
 
 public sealed record GetDocumentQuery(
-    Guid DocumentId,
-    Guid UserId) : IQuery<DocumentResponse>;
+    Guid DocumentId) : IQuery<DocumentResponse>;
