@@ -3,16 +3,33 @@
 @using ResourceManager.UI.Services.Interfaces
 @inject IDocumentService _documentService;
 
-<MudDialog>
+<MudDialog MaxWidth="MaxWidth.Medium" FullWidth="true" Class="add-document-dialog">
     <DialogContent>
-        <MudText Typo="Typo.h5">Add New Document</MudText>
-        <MudTextField Label="Title" @bind-Value="newDocumentTitle" Required="true" />
-        <MudTextField Label="Content" @bind-Value="newDocumentContent" Required="true" Multiline="true" Rows="4" />
+        <MudCard>
+            <MudCardContent>
+
+                <MudDivider />
+
+                <MudForm>
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudTextField Label="Document Title" @bind-Value="newDocumentTitle" Required="true" Placeholder="Enter the title of the document" Variant="Variant.Filled" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField Label="Document Content" @bind-Value="newDocumentContent" Required="true" Multiline="true" Rows="6" Placeholder="Enter the document content" Variant="Variant.Filled" />
+                        </MudItem>
+                    </MudGrid>
+                </MudForm>
+            </MudCardContent>
+
+            <MudDivider />
+
+            <MudCardActions Class="d-flex justify-end mt-3">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddDocument" Class="mr-2">Add</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="CloseDialog">Cancel</MudButton>
+            </MudCardActions>
+        </MudCard>
     </DialogContent>
-    <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddDocument">Add</MudButton>
-        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="CloseDialog">Cancel</MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code {
@@ -25,14 +42,22 @@
 
     private async Task AddDocument()
     {
-        if (UserId.HasValue)
+        try
         {
-            var newDocument = new CreateDocumentRequest(newDocumentTitle, newDocumentContent);
-            var result = await _documentService.AddDocument(UserId.Value, newDocument);
-        }
+            if (UserId.HasValue)
+            {
+                var newDocument = new CreateDocumentRequest(newDocumentTitle, newDocumentContent);
+                await _documentService.AddDocument(UserId.Value, newDocument);
+            }
 
-        await CloseDialog();
+            await CloseDialog();
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
 
+
     private async Task CloseDialog() => MudDialog.Cancel();
-}
+} 

@@ -141,16 +141,22 @@
     }
 
 
-    private Task AddDocumentDialog()
+    private async Task AddDocumentDialog()
     {
         var parameters = new DialogParameters
-        {
-            { "UserId", selectedUserId }
-        };
+    {
+        { "UserId", selectedUserId }
+    };
 
         var options = new DialogOptions { CloseOnEscapeKey = true };
-        return DialogService.ShowAsync<AddDocumentDialog>("Add Document", parameters, options);
+        var dialog = DialogService.Show<AddDocumentDialog>("Add Document", parameters, options);
+
+        var result = await dialog.Result;
+        
+        await _documentService.GetDocuments();
     }
+
+
 
 
 
