@@ -55,7 +55,6 @@
         <MudTh>CreatedAt</MudTh>
         <MudTh>UpdatedAt</MudTh>
         <MudTh>CurrentLevel</MudTh>
-        <MudTh>NextLevel</MudTh>
         <MudTh>Actions</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -66,7 +65,6 @@
         <MudTd DataLabel="CreatedAt">@context.CreatedAt</MudTd>
         <MudTd DataLabel="UpdatedAt">@context.UpdatedAt</MudTd>
         <MudTd DataLabel="CurrentLevel">@context.CurrentLevel</MudTd>
-        <MudTd DataLabel="NextLevel">@context.NextLevel</MudTd>
         <MudTd>
             <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye" Size="Size.Small" OnClick="() => NavigateToDocumentPage(context)" Color="Color.Info" />
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="UpdateDocumentDialog" Color="Color.Primary" />
@@ -146,9 +144,9 @@
     private Task AddDocumentDialog()
     {
         var parameters = new DialogParameters
-    {
-        { "UserId", selectedUserId } // Pass the UserId as a string key directly
-    };
+        {
+            { "UserId", selectedUserId }
+        };
 
         var options = new DialogOptions { CloseOnEscapeKey = true };
         return DialogService.ShowAsync<AddDocumentDialog>("Add Document", parameters, options);

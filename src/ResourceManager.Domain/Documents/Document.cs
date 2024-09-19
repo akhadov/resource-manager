@@ -1,4 +1,5 @@
 ﻿using ResourceManager.Domain.Users;
+using ResourceManager.Domain.Workflows;
 using ResourceManager.SharedKernel;
 
 namespace ResourceManager.Domain.Documents;
@@ -6,6 +7,8 @@ namespace ResourceManager.Domain.Documents;
 public sealed class Document : Entity
 {
     private readonly List<DocumentHistory> _histories = new();
+    private readonly List<Workflow> _workflows = new();
+    private int _currentApproverIndex = 0;
 
     private Document(
         Guid id,
@@ -31,8 +34,9 @@ public sealed class Document : Entity
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public Level? CurrentApproverLevel { get; private set; }
-    public Level? NextApproverLevel { get; private set; }
+    //public Level? NextApproverLevel { get; private set; }
     public List<DocumentHistory> Histories => _histories.ToList();
+    public List<Workflow> Workflows => _workflows.ToList();
 
     public static Document Create(
         Guid creatorId,
@@ -70,6 +74,33 @@ public sealed class Document : Entity
         AddHistory(creatorId, "Document updated", HistoryType.Update, updatedAt);
     }
 
+    public Result AddWorkflow(
+        Level approverLevel)
+    {
+        Result<Workflow> result = Workflow.Create(
+            Id,
+            approverLevel);
+
+        if (result.IsFailure)
+        {
+            return result;
+        }
+
+        _workflows.Add(result.Value);
+
+        return Result.Success();
+    }
+
+    public void RemoveWorkflow(Workflow workflow)
+    {
+        _workflows.Remove(workflow);
+    }
+
+    public void ClearWorkflows()
+    {
+        _workflows.Clear();
+    }
+
 
     public void SubmitForApproval(Guid userId, DateTime createdAt)
     {
@@ -77,51 +108,33 @@ public sealed class Document : Entity
             throw new InvalidOperationException("Only draft documents can be submitted for approval.");
 
         Status = DocumentStatus.PendingApproval;
-        CurrentApproverLevel = Level.Author;
-        NextApproverLevel = Level.Reviewer;
+        //CurrentApproverLevel = _workflows[_currentApproverIndex].ApproverLevel;
 
         AddHistory(userId, "Submitted for approval", HistoryType.StatusChange, createdAt);
     }
 
     public void Approve(Guid approverId, Level approverLevel, DateTime updatedAt)
     {
-        //if (Status != DocumentStatus.PendingApproval && Status != DocumentStatus.Approved)
-        //{
-        //    throw new InvalidOperationException("Only pending approval or approved documents can be approved.");
-        //}
+        var currentWorkflow = _workflows[_currentApproverIndex];
 
-        //if (CurrentApproverLevel != approverLevel)
-        //{
-        //    throw new InvalidOperationException($"Approval can only be done by the current approver level: {CurrentApproverLevel}.");
-        //}
+        _currentApproverIndex++;
 
-        Level? nextApproverLevel = GetNextApproverLevel(approverLevel);
+        if (_currentApproverIndex < _workflows.Count)
+        {
+            CurrentApproverLevel = _workflows[_currentApproverIndex].ApproverLevel;
+        }
+        else
+        {
+            Status = DocumentStatus.Approved;
+            CurrentApproverLevel = null; // Reset since all approvals are done
+        }
 
-        Status = DocumentStatus.Approved;
-        CurrentApproverLevel = approverLevel;
-        NextApproverLevel = nextApproverLevel;
         UpdatedAt = updatedAt;
         AddHistory(approverId, $"Document approved by {approverLevel}", HistoryType.Approval, updatedAt);
     }
 
-    private Level? GetNextApproverLevel(Level currentLevel)
-    {
-        return currentLevel switch
-        {
-            Level.Author => Level.Reviewer,
-            Level.Reviewer => Level.Manager,
-            Level.Manager => Level.Executive,
-            Level.Executive => Level.FinalApprover,
-            Level.FinalApprover => Level.FinalApprover,
-            _ => throw new InvalidOperationException("Invalid approver level.")
-        };
-    }
-
     public void Reject(Guid rejectorId, string reason, DateTime updatedAt)
     {
-        if (Status != DocumentStatus.PendingApproval)
-            throw new InvalidOperationException("Only pending documents can be rejected.");
-
         Status = DocumentStatus.Rejected;
         CurrentApproverLevel = null;
         UpdatedAt = updatedAt;

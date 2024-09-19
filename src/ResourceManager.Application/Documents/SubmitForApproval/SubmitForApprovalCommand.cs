@@ -2,4 +2,4 @@
 
 namespace ResourceManager.Application.Documents.SubmitForApproval;
 
-public sealed record SubmitForApprovalCommand(Guid DocumentId, Guid UserId) :ICommand;
+public sealed record SubmitForApprovalCommand(Guid DocumentId, Guid UserId) : ICommand;

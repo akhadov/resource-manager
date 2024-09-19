@@ -47,10 +47,6 @@ namespace ResourceManager.Infrastructure.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("current_approver_level");
 
-                    b.Property<int?>("NextApproverLevel")
-                        .HasColumnType("integer")
-                        .HasColumnName("next_approver_level");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer")
                         .HasColumnName("status");
@@ -149,6 +145,34 @@ namespace ResourceManager.Infrastructure.Database.Migrations
                     b.ToTable("users", "public");
                 });
 
+            modelBuilder.Entity("ResourceManager.Domain.Workflows.Workflow", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("ApproverLevel")
+                        .HasColumnType("integer")
+                        .HasColumnName("approver_level");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("document_id");
+
+                    b.Property<bool>("IsCurrentWorkflow")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_current_workflow");
+
+                    b.HasKey("Id")
+                        .HasName("pk_workflows");
+
+                    b.HasIndex("DocumentId")
+                        .HasDatabaseName("ix_workflows_document_id");
+
+                    b.ToTable("workflows", "public");
+                });
+
             modelBuilder.Entity("ResourceManager.Domain.Documents.Document", b =>
                 {
                     b.HasOne("ResourceManager.Domain.Users.User", null)
@@ -176,9 +200,21 @@ namespace ResourceManager.Infrastructure.Database.Migrations
                         .HasConstraintName("fk_histories_users_user_id");
                 });
 
+            modelBuilder.Entity("ResourceManager.Domain.Workflows.Workflow", b =>
+                {
+                    b.HasOne("ResourceManager.Domain.Documents.Document", null)
+                        .WithMany("Workflows")
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_workflows_documents_document_id");
+                });
+
             modelBuilder.Entity("ResourceManager.Domain.Documents.Document", b =>
                 {
                     b.Navigation("Histories");
+
+                    b.Navigation("Workflows");
                 });
 #pragma warning restore 612, 618
         }

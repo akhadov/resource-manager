@@ -16,6 +16,11 @@ internal sealed class DocumentConfiguration : IEntityTypeConfiguration<Document>
             .HasForeignKey(d => d.DocumentId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasMany(h => h.Workflows)
+            .WithOne()
+            .HasForeignKey(d => d.DocumentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasOne<User>()
                 .WithMany()
                 .HasForeignKey(d => d.CreatorId)

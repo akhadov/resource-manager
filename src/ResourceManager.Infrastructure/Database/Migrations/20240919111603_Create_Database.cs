@@ -87,6 +87,28 @@ namespace ResourceManager.Infrastructure.Database.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "workflows",
+                schema: "public",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    document_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    approver_level = table.Column<int>(type: "integer", nullable: false),
+                    is_current_workflow = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_workflows", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_workflows_documents_document_id",
+                        column: x => x.document_id,
+                        principalSchema: "public",
+                        principalTable: "documents",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "ix_documents_creator_id",
                 schema: "public",
@@ -111,6 +133,12 @@ namespace ResourceManager.Infrastructure.Database.Migrations
                 table: "users",
                 column: "username",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_workflows_document_id",
+                schema: "public",
+                table: "workflows",
+                column: "document_id");
         }
 
         /// <inheritdoc />
@@ -118,6 +146,10 @@ namespace ResourceManager.Infrastructure.Database.Migrations
         {
             migrationBuilder.DropTable(
                 name: "histories",
+                schema: "public");
+
+            migrationBuilder.DropTable(
+                name: "workflows",
                 schema: "public");
 
             migrationBuilder.DropTable(

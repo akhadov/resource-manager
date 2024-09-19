@@ -25,12 +25,10 @@
     {
         if (DocumentId.HasValue)
         {
-            // Create a new document request with the title and content
             var newDocument = new UpdateDocumentRequest(newDocumentTitle, newDocumentContent);
-            var result = await _documentService.UpdateDocuments(DocumentId.Value, newDocument); // Ensure UserId is used correctly
+            var result = await _documentService.UpdateDocuments(DocumentId.Value, newDocument);
         }
 
-        // Close the dialog
         await CloseDialog();
     }
 

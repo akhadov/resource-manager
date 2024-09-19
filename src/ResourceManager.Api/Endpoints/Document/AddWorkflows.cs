@@ -1,22 +1,24 @@
 ﻿using MediatR;
 using ResourceManager.Api.Extensions;
 using ResourceManager.Api.Infrastructure;
-using ResourceManager.Application.Documents.SubmitForApproval;
+using ResourceManager.Application.Workflows.Create;
 using ResourceManager.SharedKernel;
 
 namespace ResourceManager.Api.Endpoints.Document;
 
-public class SubmitForApprove : IEndpoint
+public class AddWorkflows : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPut("documents/{documentId}/submit/{userId}", async (
+        app.MapPost("documents/{documentId}/workflows", async (
             Guid documentId,
-            Guid userId,
+            List<WorkflowRequest> workflows,
             ISender sender,
             CancellationToken cancellationToken) =>
         {
-            Result result = await sender.Send(new SubmitForApprovalCommand(documentId, userId), cancellationToken);
+            var command = new CreateWorkflowCommand(documentId, workflows);
+
+            Result result = await sender.Send(command, cancellationToken);
 
             return result.Match(Results.NoContent, CustomResults.Problem);
         })

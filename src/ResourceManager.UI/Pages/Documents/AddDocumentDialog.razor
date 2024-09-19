@@ -16,7 +16,7 @@
 </MudDialog>
 
 @code {
-    [Parameter] public Guid? UserId { get; set; } // Ensure this parameter is passed from the parent component
+    [Parameter] public Guid? UserId { get; set; }
     [CascadingParameter]
     private MudDialogInstance MudDialog { get; set; }
 
@@ -27,12 +27,10 @@
     {
         if (UserId.HasValue)
         {
-            // Create a new document request with the title and content
             var newDocument = new CreateDocumentRequest(newDocumentTitle, newDocumentContent);
-            var result = await _documentService.AddDocument(UserId.Value, newDocument); // Ensure UserId is used correctly
+            var result = await _documentService.AddDocument(UserId.Value, newDocument);
         }
 
-        // Close the dialog
         await CloseDialog();
     }
 

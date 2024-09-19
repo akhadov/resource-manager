@@ -1,5 +1,6 @@
 ﻿@page "/document/{DocumentId:guid}"
 @using ResourceManager.Application.Documents.GetDocument
+@using ResourceManager.Application.Documents.Reject
 @using ResourceManager.Domain.Documents
 @using ResourceManager.UI.Services.Interfaces
 @inject IDocumentService _documentService
@@ -7,9 +8,9 @@
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mx-auto my-4">
     <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="GoBack">
-        Go Back
+        Back to Documents
     </MudButton>
-    
+
     <MudPaper Class="pa-4" Elevation="4">
         @if (isLoading)
         {
@@ -44,7 +45,7 @@
                     <MudText Typo="Typo.subtitle1" Color="Color.Primary">Status:</MudText>
                 </MudItem>
                 <MudItem xs="12" sm="8">
-                    <MudText Typo="Typo.body1" Class="mb-3">@document.Status</MudText>
+                    <MudText Typo="Typo.body1">@document.Status</MudText>
                 </MudItem>
 
                 <MudItem xs="12" sm="4">
@@ -64,20 +65,55 @@
 
             <MudDivider Class="my-4" />
 
-            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Edit">
-                Edit Document
-            </MudButton>
-            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" Class="ml-2">
-                Delete Document
-            </MudButton>
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Edit">
+                        Edit Document
+                    </MudButton>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="DeleteDocument" Class="ml-2">
+                        Delete Document
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="my-4" />
+
+                <MudGrid>
+                    <MudItem xs="12" sm="4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" OnClick="SubmitForApproval">
+                            Submit for Approval
+                        </MudButton>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Check" OnClick="ApproveDocument" Class="ml-2">
+                            Approve Document
+                        </MudButton>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="rejectionReason" Label="Rejection Reason" Variant="Variant.Filled" Color="Color.Error" Required="true" />
+                        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Close" OnClick="RejectDocument" Disabled="@string.IsNullOrWhiteSpace(rejectionReason)" Class="ml-2">
+                            Reject Document
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            
         }
     </MudPaper>
 </MudContainer>
 
 @code {
     [Parameter] public Guid DocumentId { get; set; }
+    [Parameter] public Guid? UserId { get; set; } // Passed from the previous page
     private DocumentResponse? document;
     private bool isLoading = true;
+    private bool isSubmitting = false;
+    private bool isApproving = false;
+    private bool isRejecting = false;
+    private string rejectionReason = string.Empty; // Input field binding
 
     protected override async Task OnParametersSetAsync()
     {
@@ -85,11 +121,6 @@
         try
         {
             document = await _documentService.GetDocument(DocumentId);
-
-            if (document == null)
-            {
-                Console.WriteLine($"Document with ID {DocumentId} not found.");
-            }
         }
         catch (Exception ex)
         {
@@ -101,8 +132,99 @@
         }
     }
 
+    private async Task SubmitForApproval()
+    {
+        isSubmitting = true;
+        try
+        {
+            if (UserId.HasValue)
+            {
+                var result = await _documentService.SubmitForApproval(DocumentId, UserId.Value);
+                if (result)
+                {
+                    Console.WriteLine("Document submitted for approval successfully.");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to submit document for approval.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error submitting document for approval: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task ApproveDocument()
+    {
+        isApproving = true;
+        try
+        {
+            if (UserId.HasValue)
+            {
+                var result = await _documentService.ApproveDocument(DocumentId, UserId.Value);
+                if (result)
+                {
+                    Console.WriteLine("Document approved successfully.");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to approve document.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error approving document: {ex.Message}");
+        }
+        finally
+        {
+            isApproving = false;
+        }
+    }
+
+    private async Task RejectDocument()
+    {
+        isRejecting = true;
+        try
+        {
+            if (UserId.HasValue)
+            {
+                var rejectRequest = new RejectDocumentRequest(rejectionReason);
+
+                var result = await _documentService.RejectDocuemt(DocumentId, UserId.Value, rejectRequest);
+                if (result)
+                {
+                    Console.WriteLine("Document rejected successfully.");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to reject document.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error rejecting document: {ex.Message}");
+        }
+        finally
+        {
+            isRejecting = false;
+        }
+    }
+
     private void GoBack()
     {
         _navigationManager.NavigateTo("/documents");
+    }
+
+    private void DeleteDocument()
+    {
+        // Add delete document logic here
     }
 }

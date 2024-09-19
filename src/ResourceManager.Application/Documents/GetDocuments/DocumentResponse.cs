@@ -12,5 +12,4 @@ public sealed record DocumentResponse(
     DocumentStatus Status,
     DateTime CreatedAt,
     DateTime? UpdatedAt,
-    Level? CurrentLevel,
-    Level? NextLevel);
+    Level? CurrentLevel);

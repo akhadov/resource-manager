@@ -25,11 +25,6 @@ internal sealed class ApproveDocumentCommandHandler(
         var document = await documentRepository.GetByIdAsync(request.DocumentId, cancellationToken);
 
 
-        if (user.Level != document.NextApproverLevel)
-        {
-            throw new InvalidOperationException($"The document must be approved by the next approver: {document.NextApproverLevel}.");
-        }
-
         document.Approve(user.Id, user.Level, dateTimeProvider.UtcNow);
 
         documentRepository.Update(document);

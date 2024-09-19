@@ -110,7 +110,7 @@ public class DocumentService : IDocumentService
             throw;
         }
     }
-    
+
     public async Task<bool> UpdateDocuments(Guid documentId, UpdateDocumentRequest updateDocumentRequest)
     {
         try
@@ -133,12 +133,12 @@ public class DocumentService : IDocumentService
             throw;
         }
     }
-    
+
     public async Task<bool> SubmitForApproval(Guid documentId, Guid userId)
     {
         try
         {
-            var response = await _http.PostAsync($"documents/{documentId}/submit/{userId}", null);
+            var response = await _http.PutAsync($"documents/{documentId}/submit/{userId}", null);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -159,7 +159,7 @@ public class DocumentService : IDocumentService
     {
         try
         {
-            var response = await _http.PostAsync($"documents/{documentId}/approve/{userId}", null);
+            var response = await _http.PutAsync($"documents/{documentId}/approve/{userId}", null);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -182,7 +182,7 @@ public class DocumentService : IDocumentService
         {
             var rejectDocumentJson = new StringContent(JsonSerializer.Serialize(reason), Encoding.UTF8, "application/json");
 
-            var response = await _http.PostAsync($"documents/{documentId}/reject/{userId}", rejectDocumentJson);
+            var response = await _http.PutAsync($"documents/{documentId}/reject/{userId}", rejectDocumentJson);
 
             if (!response.IsSuccessStatusCode)
             {

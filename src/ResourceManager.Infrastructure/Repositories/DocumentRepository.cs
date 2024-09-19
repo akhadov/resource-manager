@@ -23,7 +23,7 @@ internal sealed class DocumentRepository(ApplicationDbContext context) : IDocume
 
     public void Update(Document document)
     {
-       
+
 
         context.Documents.Update(document);
     }

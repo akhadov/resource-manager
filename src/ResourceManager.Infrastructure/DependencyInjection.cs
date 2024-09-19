@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ResourceManager.Application.Abstractions.Data;
 using ResourceManager.Domain.Documents;
 using ResourceManager.Domain.Users;
+using ResourceManager.Domain.Workflows;
 using ResourceManager.Infrastructure.Database;
 using ResourceManager.Infrastructure.Repositories;
 using ResourceManager.Infrastructure.Time;
@@ -44,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IDocumentHistoryRepository, DocumentHistoryRepository>();
+        services.AddScoped<IWorkflowRepository, WorkflowRepository>();
 
         return services;
     }

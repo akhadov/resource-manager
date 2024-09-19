@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using ResourceManager.Application.Abstractions.Messaging;
+﻿using ResourceManager.Application.Abstractions.Messaging;
 
 namespace ResourceManager.Application.Documents.CreateDocument;
 
