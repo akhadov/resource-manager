@@ -20,8 +20,4 @@
     <ProjectReference Include="..\ResourceManager.Domain\ResourceManager.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Workflows\GetById\" />
-  </ItemGroup>
-
 </Project>

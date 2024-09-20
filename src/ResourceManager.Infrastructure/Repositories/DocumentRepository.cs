@@ -32,4 +32,9 @@ internal sealed class DocumentRepository(ApplicationDbContext context) : IDocume
     {
         context.Documents.Remove(document);
     }
+
+    public Task<Document?> GetWorkflowsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return context.Documents.Include(h => h.Workflows).FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+    }
 }
