@@ -105,7 +105,7 @@
 
     private Guid? selectedDocumentId;
     public Guid? selectedUserId;
-    private UserResponse? selectedUser;
+    public UserResponse? selectedUser;
 
     protected override async Task OnInitializedAsync()
     {
@@ -212,6 +212,13 @@
 
     private void NavigateToDocumentPage(DocumentResponse document)
     {
-        _navigationManager.NavigateTo($"/document/{document.Id}");
+        if (selectedUserId.HasValue)
+        {
+            _navigationManager.NavigateTo($"/document/{document.Id}/users/{selectedUser.Id}");
+        }
+        else
+        {
+            _navigationManager.NavigateTo($"/document/{document.Id}");
+        }
     }
 }

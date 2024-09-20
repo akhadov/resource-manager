@@ -115,20 +115,21 @@ public sealed class Document : Entity
 
     public void Approve(Guid approverId, Level approverLevel, DateTime updatedAt)
     {
-        var currentWorkflow = _workflows[_currentApproverIndex];
+        //var currentWorkflow = _workflows[_currentApproverIndex];
 
-        _currentApproverIndex++;
+        //_currentApproverIndex++;
 
-        if (_currentApproverIndex < _workflows.Count)
-        {
-            CurrentApproverLevel = _workflows[_currentApproverIndex].ApproverLevel;
-        }
-        else
-        {
-            Status = DocumentStatus.Approved;
-            CurrentApproverLevel = null; // Reset since all approvals are done
-        }
+        //if (_currentApproverIndex < _workflows.Count)
+        //{
+        //    CurrentApproverLevel = _workflows[_currentApproverIndex].ApproverLevel;
+        //}
+        //else
+        //{
+        //    Status = DocumentStatus.Approved;
+        //    CurrentApproverLevel = null; // Reset since all approvals are done
+        //}
 
+        Status = DocumentStatus.Approved;
         UpdatedAt = updatedAt;
         AddHistory(approverId, $"Document approved by {approverLevel}", HistoryType.Approval, updatedAt);
     }

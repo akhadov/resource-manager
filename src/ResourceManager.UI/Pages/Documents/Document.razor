@@ -1,10 +1,14 @@
 ﻿@page "/document/{DocumentId:guid}"
+@page "/document/{DocumentId:guid}/users/{UserId:guid}"
 @using ResourceManager.Application.Documents.GetDocument
 @using ResourceManager.Application.Documents.Reject
+@using ResourceManager.Application.Users.GetUser
 @using ResourceManager.Domain.Documents
+@using ResourceManager.Domain.Users
 @using ResourceManager.UI.Services.Interfaces
 @inject IDialogService DialogService
 @inject IDocumentService _documentService
+@inject IUserService _userService
 @inject NavigationManager _navigationManager
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mx-auto my-4">
@@ -67,40 +71,40 @@
             <MudDivider Class="my-4" />
 
             <MudGrid>
-                <MudItem xs="12" sm="4">
-                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Edit">
-                        Edit Document
-                    </MudButton>
-                </MudItem>
-                <MudItem xs="12" sm="4">
-                    <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="@(async () => await DeleteDocument(DocumentId))" Class="ml-2">
-                        Delete Document
-                    </MudButton>
-                </MudItem>
-            </MudGrid>
-
-            <MudDivider Class="my-4" />
-
-                <MudGrid>
+                @if (selectedUser?.Actor == Actor.Provider)  // Assuming `Role` or similar property identifies the user's type
+                {
+                    <MudItem xs="12" sm="4">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Edit">
+                            Edit Document
+                        </MudButton>
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="@(async () => await DeleteDocument(DocumentId))" Class="ml-2">
+                            Delete Document
+                        </MudButton>
+                    </MudItem>
                     <MudItem xs="12" sm="4">
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" OnClick="SubmitForApproval">
                             Submit for Approval
                         </MudButton>
                     </MudItem>
-
+                }
+                else if (selectedUser?.Actor == Actor.Approver)
+                {
                     <MudItem xs="12" sm="4">
                         <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Check" OnClick="ApproveDocument" Class="ml-2">
                             Approve Document
                         </MudButton>
                     </MudItem>
-
                     <MudItem xs="12" sm="4">
                         <MudTextField @bind-Value="rejectionReason" Label="Rejection Reason" Variant="Variant.Filled" Color="Color.Error" Required="true" />
                         <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Close" OnClick="RejectDocument" Disabled="@string.IsNullOrWhiteSpace(rejectionReason)" Class="ml-2">
                             Reject Document
                         </MudButton>
                     </MudItem>
-                </MudGrid>
+                }
+            </MudGrid>
+
             
         }
     </MudPaper>
@@ -110,6 +114,7 @@
     [Parameter] public Guid DocumentId { get; set; }
     [Parameter] public Guid? UserId { get; set; } // Passed from the previous page
     private DocumentResponse? document;
+    public UserResponse? selectedUser;
     private bool isLoading = true;
     private bool isSubmitting = false;
     private bool isApproving = false;
@@ -121,6 +126,8 @@
         isLoading = true;
         try
         {
+            if (!string.IsNullOrEmpty(UserId.ToString()))
+                selectedUser = await _userService.GetUser(UserId.Value);
             document = await _documentService.GetDocument(DocumentId);
         }
         catch (Exception ex)
