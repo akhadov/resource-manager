@@ -1,5 +1,4 @@
-﻿
-using ResourceManager.Application.Abstractions.Data;
+﻿using ResourceManager.Application.Abstractions.Data;
 using ResourceManager.Application.Abstractions.Messaging;
 using ResourceManager.Domain.Documents;
 using ResourceManager.Domain.Workflows;
@@ -14,7 +13,7 @@ internal sealed class RemoveWorkflowCommandHandler(
 {
     public async Task<Result> Handle(RemoveWorkflowCommand request, CancellationToken cancellationToken)
     {
-        Document? document = await documentRepository.GetByIdAsync(request.DocumentId, cancellationToken);
+        Document? document = await documentRepository.GetWorkflowsAsync(request.DocumentId, cancellationToken);
 
         Workflow? workflow = document.Workflows.Find(w => w.Id == request.WorkflowId);
 
