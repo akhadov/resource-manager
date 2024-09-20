@@ -20,4 +20,8 @@
     <ProjectReference Include="..\ResourceManager.Domain\ResourceManager.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Abstractions\Storage\" />
+  </ItemGroup>
+
 </Project>
