@@ -1,36 +1,77 @@
 ﻿@using ResourceManager.Application.Documents.UpdateDocument
 @using ResourceManager.UI.Services.Interfaces
 @inject IDocumentService _documentService
-<MudDialog>
+
+<MudDialog MaxWidth="MaxWidth.Medium" FullWidth="true">
     <DialogContent>
-        <MudText Typo="Typo.h5">Update Document</MudText>
-        <MudTextField Label="Title" @bind-Value="newDocumentTitle" Required="true" />
-        <MudTextField Label="Content" @bind-Value="newDocumentContent" Required="true" Multiline="true" Rows="4" />
+        <MudStack Spacing="2" Padding="16px">
+            <MudTextField Label="Title"
+                          @bind-Value="newDocumentTitle"
+                          FullWidth="true"
+                          Placeholder="Document title"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true" />
+
+            <MudTextField Label="Content"
+                          @bind-Value="newDocumentContent"
+                          FullWidth="true"
+                          Placeholder="Document content"
+                          Multiline="true"
+                          Rows="5"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true" />
+        </MudStack>
     </DialogContent>
+
     <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdateDocument">Save</MudButton>
-        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CloseDialog">Cancel</MudButton>
+        <MudCardActions Class="d-flex justify-end mt-3">
+            <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="CloseDialog">Cancel</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdateDocument">Save</MudButton>
+        </MudCardActions>
     </DialogActions>
 </MudDialog>
 
 @code {
     [Parameter] public Guid? DocumentId { get; set; }
-    [CascadingParameter]
-    private MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] private MudDialogInstance MudDialog { get; set; }
 
     private string newDocumentTitle = string.Empty;
     private string newDocumentContent = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (DocumentId.HasValue)
+        {
+            // Load the current document's details to populate the fields
+            var document = await _documentService.GetDocument(DocumentId.Value);
+            if (document != null)
+            {
+                newDocumentTitle = document.Title;
+                newDocumentContent = document.Content;
+            }
+        }
+    }
 
     private async Task UpdateDocument()
     {
         if (DocumentId.HasValue)
         {
-            var newDocument = new UpdateDocumentRequest(newDocumentTitle, newDocumentContent);
-            var result = await _documentService.UpdateDocuments(DocumentId.Value, newDocument);
-        }
+            var updatedDocument = new UpdateDocumentRequest(newDocumentTitle, newDocumentContent);
+            var result = await _documentService.UpdateDocuments(DocumentId.Value, updatedDocument);
 
-        await CloseDialog();
+            if (result)
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                // Handle update failure (optional)
+                MudDialog.Close(DialogResult.Ok(false));
+            }
+        }
     }
 
-    private async Task CloseDialog() => MudDialog.Cancel();
+    private void CloseDialog() => MudDialog.Cancel();
 }

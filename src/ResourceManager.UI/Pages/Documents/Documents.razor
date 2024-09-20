@@ -67,7 +67,7 @@
         <MudTd DataLabel="CurrentLevel">@context.CurrentLevel</MudTd>
         <MudTd>
             <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye" Size="Size.Small" OnClick="() => NavigateToDocumentPage(context)" Color="Color.Info" />
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="UpdateDocumentDialog" Color="Color.Primary" />
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(async () => await UpdateDocumentDialog(context.Id))" Color="Color.Primary" />
             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" OnClick="@(async () => await DeleteDocument(context.Id))" Color="Color.Error" />
             <MudIconButton Icon="@Icons.Material.Filled.History" Size="Size.Small" OnClick="@(async () => await ShowHistories(context.Id))" Color="Color.Default" />
         </MudTd>
@@ -140,32 +140,30 @@
         }
     }
 
-
     private async Task AddDocumentDialog()
     {
         var parameters = new DialogParameters
-    {
-        { "UserId", selectedUserId }
-    };
+        {
+            { "UserId", selectedUserId }
+        };
 
         var options = new DialogOptions { CloseOnEscapeKey = true };
         var dialog = DialogService.Show<AddDocumentDialog>("Add Document", parameters, options);
 
         var result = await dialog.Result;
         
-        await _documentService.GetDocuments();
+        if (!result.Canceled && result.Data is bool updateSuccess && updateSuccess)
+        {
+            // Refresh the document list after successful update
+            await LoadDocuments();
+        }
     }
 
-
-
-
-
-
-    private async Task UpdateDocumentDialog()
+    private async Task UpdateDocumentDialog(Guid documentId)
     {
         var parameters = new DialogParameters
         {
-            { "DocumentId", selectedDocumentId }
+            { "DocumentId", documentId }
         };
 
         var options = new DialogOptions { CloseOnEscapeKey = true };
@@ -173,11 +171,13 @@
 
         var result = await dialog.Result;
 
-        if (!result.Canceled)
+        if (!result.Canceled && result.Data is bool updateSuccess && updateSuccess)
         {
+            // Refresh the document list after successful update
             await LoadDocuments();
         }
     }
+
 
     private async Task ShowHistories(Guid documentId)
     {

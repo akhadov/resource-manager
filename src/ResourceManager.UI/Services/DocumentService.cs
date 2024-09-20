@@ -22,28 +22,55 @@ public class DocumentService : IDocumentService
             PropertyNameCaseInsensitive = true
         };
     }
-    public async Task<Application.Documents.GetDocuments.DocumentResponse> AddDocument(Guid userId, CreateDocumentRequest document)
+    //public async Task<Application.Documents.GetDocuments.DocumentResponse> AddDocument(Guid userId, CreateDocumentRequest document)
+    //{
+    //    try
+    //    {
+    //        var documentjson = new StringContent(JsonSerializer.Serialize(document), Encoding.UTF8, "application/json");
+
+    //        var response = await _http.PostAsync($"documents/users/{userId}", documentjson);
+
+    //        if (!response.IsSuccessStatusCode)
+    //        {
+    //            return null;
+    //        }
+    //        var responseBody = await response.Content.ReadAsStreamAsync();
+
+    //        var newDocument = await JsonSerializer.DeserializeAsync<Application.Documents.GetDocuments.DocumentResponse>(responseBody, _serializerOptions);
+
+    //        return newDocument;
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        Console.WriteLine(e);
+    //        throw;
+    //    }
+    //}
+    public async Task<bool> AddDocument(Guid userId, CreateDocumentRequest document)
     {
         try
         {
-            var documentjson = new StringContent(JsonSerializer.Serialize(document), Encoding.UTF8, "application/json");
+            var documentJson = new StringContent(JsonSerializer.Serialize(document), Encoding.UTF8, "application/json");
 
-            var response = await _http.PostAsync($"documents/users/{userId}", documentjson);
+            // Make the POST request to add the document
+            var response = await _http.PostAsync($"documents/users/{userId}", documentJson);
 
+            // Check if the request was successful
             if (!response.IsSuccessStatusCode)
             {
-                return null;
+                // Log the failure and return false
+                Console.WriteLine($"Failed to add document. StatusCode: {response.StatusCode}");
+                return false;
             }
-            var responseBody = await response.Content.ReadAsStreamAsync();
 
-            var newDocument = await JsonSerializer.DeserializeAsync<Application.Documents.GetDocuments.DocumentResponse>(responseBody, _serializerOptions);
-
-            return newDocument;
+            // If the response is successful, return true
+            return true;
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            // Log any exceptions that occur and rethrow the exception if needed
+            Console.WriteLine($"An error occurred: {e.Message}");
+            return false;
         }
     }
 

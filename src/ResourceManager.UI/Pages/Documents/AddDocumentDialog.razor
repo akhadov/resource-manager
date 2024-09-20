@@ -42,22 +42,38 @@
 
     private async Task AddDocument()
     {
-        try
-        {
-            if (UserId.HasValue)
-            {
-                var newDocument = new CreateDocumentRequest(newDocumentTitle, newDocumentContent);
-                await _documentService.AddDocument(UserId.Value, newDocument);
-            }
+        // try
+        // {
+        //     if (UserId.HasValue)
+        //     {
+        //         var newDocument = new CreateDocumentRequest(newDocumentTitle, newDocumentContent);
+        //         await _documentService.AddDocument(UserId.Value, newDocument);
+        //     }
 
-            await CloseDialog();
-        }
-        catch(Exception ex)
+        //     CloseDialog();
+        // }
+        // catch(Exception ex)
+        // {
+        //     Console.WriteLine(ex.Message);
+        // }
+
+        if (UserId.HasValue)
         {
-            Console.WriteLine(ex.Message);
+            var newDocument = new CreateDocumentRequest(newDocumentTitle, newDocumentContent);
+            var result = await _documentService.AddDocument(UserId.Value, newDocument);
+
+            if (result)
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                // Handle update failure (optional)
+                MudDialog.Close(DialogResult.Ok(false));
+            }
         }
     }
 
 
-    private async Task CloseDialog() => MudDialog.Cancel();
+    private void CloseDialog() => MudDialog.Cancel();
 } 

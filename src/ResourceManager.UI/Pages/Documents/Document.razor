@@ -3,6 +3,7 @@
 @using ResourceManager.Application.Documents.Reject
 @using ResourceManager.Domain.Documents
 @using ResourceManager.UI.Services.Interfaces
+@inject IDialogService DialogService
 @inject IDocumentService _documentService
 @inject NavigationManager _navigationManager
 
@@ -72,7 +73,7 @@
                     </MudButton>
                 </MudItem>
                 <MudItem xs="12" sm="4">
-                    <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="DeleteDocument" Class="ml-2">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="@(async () => await DeleteDocument(DocumentId))" Class="ml-2">
                         Delete Document
                     </MudButton>
                 </MudItem>
@@ -223,8 +224,20 @@
         _navigationManager.NavigateTo("/documents");
     }
 
-    private void DeleteDocument()
+    private async Task DeleteDocument(Guid documentId)
     {
-        // Add delete document logic here
+        var confirmed = await DialogService.ShowMessageBox(
+            "Delete Document",
+            "Are you sure you want to delete this document?",
+            yesText: "Delete", cancelText: "Cancel");
+
+        if (confirmed == true)
+        {
+            var success = await _documentService.DeleteDocument(documentId);
+            if (success)
+            {
+                GoBack();
+            }
+        }
     }
 }
