@@ -17,7 +17,7 @@
     <MudSelect T="Guid?" Label="Select User" Value="selectedUserId" ValueChanged="OnUserSelected">
         @foreach (var user in _users)
         {
-            <MudSelectItem T="Guid?" Value="@user.Id">@user.Name (@user.Username)</MudSelectItem>
+            <MudSelectItem T="Guid?" Value="@user.Id">@user.Name @@@user.Username / @user.Actor</MudSelectItem>
         }
     </MudSelect>
 }
@@ -30,13 +30,17 @@
 
 <MudText Typo="Typo.h3">Documents</MudText>
 
-<MudGrid>
-    <MudItem xs="10">
-    </MudItem>
-    <MudItem xs="2">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddDocumentDialog">Add Document</MudButton>
-    </MudItem>
-</MudGrid>
+@if (selectedUser != null && selectedUser.Actor != Actor.Approver)
+{
+    <MudGrid>
+        <MudItem xs="10">
+        </MudItem>
+        <MudItem xs="2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddDocumentDialog">Add Document</MudButton>
+        </MudItem>
+    </MudGrid>
+}
+
 
 <MudTable Items="_documents" Hover="true" Bordered="true" Striped="true">
     <ColGroup>
@@ -58,7 +62,7 @@
         <MudTh>Actions</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Username">@context.Username</MudTd>
+        <MudTd DataLabel="Username">@@@context.Username</MudTd>
         <MudTd DataLabel="Title">@context.Title</MudTd>
         <MudTd DataLabel="Content">@context.Content</MudTd>
         <MudTd DataLabel="Status">@context.Status</MudTd>
@@ -67,10 +71,16 @@
         <MudTd DataLabel="CurrentLevel">@context.CurrentLevel</MudTd>
         <MudTd>
             <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye" Size="Size.Small" OnClick="() => NavigateToDocumentPage(context)" Color="Color.Info" />
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(async () => await UpdateDocumentDialog(context.Id))" Color="Color.Primary" />
-            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" OnClick="@(async () => await DeleteDocument(context.Id))" Color="Color.Error" />
+
+            @if (selectedUser != null && selectedUser.Actor != Actor.Approver)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(async () => await UpdateDocumentDialog(context.Id))" Color="Color.Primary" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" OnClick="@(async () => await DeleteDocument(context.Id))" Color="Color.Error" />
+            }
+
             <MudIconButton Icon="@Icons.Material.Filled.History" Size="Size.Small" OnClick="@(async () => await ShowHistories(context.Id))" Color="Color.Default" />
         </MudTd>
+
     </RowTemplate>
 
     <ChildRowContent>
@@ -120,7 +130,7 @@
         if (selectedUser != null && selectedUser.Actor == Actor.Approver)
         {
             // Filter out documents with status 'Draft' if the user is an approver
-            _documents = _documents?.Where(doc => doc.Status != DocumentStatus.Draft);
+            _documents = _documents?.Where(doc => doc.Status != DocumentStatus.Draft && doc.Status != DocumentStatus.Rejected);
         }
     }
 
@@ -142,6 +152,16 @@
 
     private async Task AddDocumentDialog()
     {
+        if (!selectedUserId.HasValue)
+        {
+            await DialogService.ShowMessageBox(
+                "Add Document",
+                "Please choose a user before adding a document.",
+                yesText: "OK"
+            );
+            return;
+        }
+
         var parameters = new DialogParameters
         {
             { "UserId", selectedUserId }
