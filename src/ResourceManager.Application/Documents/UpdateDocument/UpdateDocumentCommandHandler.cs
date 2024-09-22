@@ -19,7 +19,7 @@ internal sealed class UpdateDocumentCommandHandler(
 
         var user = await userRepository.GetByIdAsync(document.CreatorId);
 
-        if (user.Actor != Actor.Provider || document.CreatorId != user.Id)
+        if (user.Actor != Actor.Provider && document.CreatorId != user.Id)
         {
             throw new Exception("Only the document owner (Provider) can update the document.");
         }

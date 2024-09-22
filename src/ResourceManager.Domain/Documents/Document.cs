@@ -55,24 +55,35 @@ public sealed class Document : Entity
         return document;
     }
 
-    public void Update(Guid creatorId, string title, string content, DateTime updatedAt)
+    public void Update(Guid userId, string title, string content, DateTime updatedAt)
     {
-        if (Status != DocumentStatus.Draft)
+        // Only documents in Draft or Rejected status can be updated
+        if (Status != DocumentStatus.Draft && Status != DocumentStatus.Rejected)
         {
-            throw new Exception("Only draft documents can be updated.");
+            throw new InvalidOperationException("Only draft or rejected documents can be updated.");
         }
 
-        if (creatorId != CreatorId)
+        // Only the creator of the document is allowed to update it
+        if (userId != CreatorId)
         {
-            throw new Exception("Only the document creator can update the document.");
+            throw new UnauthorizedAccessException("Only the document creator can update the document.");
         }
 
+        // Update title and content
         Title = title;
         Content = content;
         UpdatedAt = updatedAt;
 
-        AddHistory(creatorId, "Document updated", HistoryType.Update, updatedAt);
+        // If document was rejected, change status back to Draft
+        if (Status == DocumentStatus.Rejected)
+        {
+            Status = DocumentStatus.Draft;
+        }
+
+        // Add history entry for the update
+        AddHistory(userId, "Document updated", HistoryType.Update, updatedAt);
     }
+
 
     public Result AddWorkflow(
         Level approverLevel)

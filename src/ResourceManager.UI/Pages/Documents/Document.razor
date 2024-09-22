@@ -71,7 +71,7 @@
             <MudDivider Class="my-4" />
 
             <MudGrid>
-                @if (selectedUser?.Actor == Actor.Provider)  // Assuming `Role` or similar property identifies the user's type
+                @if (selectedUser?.Actor == Actor.Provider && selectedUser?.Id == document.CreatorId)  // Assuming `Role` or similar property identifies the user's type
                 {
                     <MudItem xs="12" sm="4">
                         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Edit">

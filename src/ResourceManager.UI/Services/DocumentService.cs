@@ -2,6 +2,7 @@
 using ResourceManager.Application.Documents.CreateDocument;
 using ResourceManager.Application.Documents.Reject;
 using ResourceManager.Application.Documents.UpdateDocument;
+using ResourceManager.Application.Workflows.Create;
 using ResourceManager.UI.Services.Interfaces;
 using System.Net.Http.Json;
 using System.Text;
@@ -223,6 +224,63 @@ public class DocumentService : IDocumentService
         {
             Console.WriteLine(e);
             throw;
+        }
+    }
+
+    public async Task<bool> AddWorkflow(Guid documentId, WorkflowRequest workflow)
+    {
+        try
+        {
+            // Serialize the workflow request to JSON format
+            var workflowJson = new StringContent(JsonSerializer.Serialize(workflow), Encoding.UTF8, "application/json");
+
+            // Make a POST request to add a new workflow to the document
+            var response = await _http.PostAsync($"documents/{documentId}/workflows", workflowJson);
+
+            // Check if the request was successful
+            if (!response.IsSuccessStatusCode)
+            {
+                // Log error and return false if the API call fails
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error adding workflow: {responseContent}");
+                return false;
+            }
+
+            // If successful, return true
+            return true;
+        }
+        catch (Exception e)
+        {
+            // Handle any exceptions and log the error message
+            Console.WriteLine($"An error occurred while adding workflow: {e.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> RemoveWorkflow(Guid documentId, Guid workflowId)
+    {
+        try
+        {
+            // Make a DELETE request to remove a workflow by its ID
+            var response = await _http.DeleteAsync($"documents/{documentId}/workflows/{workflowId}");
+
+            // Check if the request was successful
+            if (!response.IsSuccessStatusCode)
+            {
+                // Log error and return false if the API call fails
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error removing workflow: {responseContent}");
+                return false;
+            }
+
+            // If successful, return true
+            return true;
+        }
+        catch (Exception e)
+        {
+            // Handle any exceptions and log the error message
+            Console.WriteLine($"An error occurred while removing workflow: {e.Message}");
+            return false;
         }
     }
 }

@@ -17,7 +17,7 @@
     <MudSelect T="Guid?" Label="Select User" Value="selectedUserId" ValueChanged="OnUserSelected">
         @foreach (var user in _users)
         {
-            <MudSelectItem T="Guid?" Value="@user.Id">@user.Name @@@user.Username / @user.Actor</MudSelectItem>
+            <MudSelectItem T="Guid?" Value="@user.Id">@user.Name @@@user.Username / @user.Actor / @user.Level</MudSelectItem>
         }
     </MudSelect>
 }
@@ -72,7 +72,7 @@
         <MudTd>
             <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye" Size="Size.Small" OnClick="() => NavigateToDocumentPage(context)" Color="Color.Info" />
 
-            @if (selectedUser != null && selectedUser.Actor != Actor.Approver)
+            @if (selectedUser != null && selectedUser.Actor != Actor.Approver && selectedUser.Id == context.CreatorId)
             {
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(async () => await UpdateDocumentDialog(context.Id))" Color="Color.Primary" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" OnClick="@(async () => await DeleteDocument(context.Id))" Color="Color.Error" />
