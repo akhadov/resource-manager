@@ -204,7 +204,7 @@ public class DocumentService : IDocumentService
         }
     }
 
-    public async Task<bool> RejectDocuemt(Guid documentId, Guid userId, RejectDocumentRequest reason)
+    public async Task<bool> RejectDocument(Guid documentId, Guid userId, RejectDocumentRequest reason)
     {
         try
         {

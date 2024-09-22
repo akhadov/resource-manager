@@ -19,5 +19,5 @@ public interface IDocumentService
     Task<bool> RemoveWorkflow(Guid documentId, Guid workflowId);
     Task<bool> SubmitForApproval(Guid documentId, Guid userId);
     Task<bool> ApproveDocument(Guid documentId, Guid userId);
-    Task<bool> RejectDocuemt(Guid documentId, Guid userId, RejectDocumentRequest reason);
+    Task<bool> RejectDocument(Guid documentId, Guid userId, RejectDocumentRequest reason);
 }

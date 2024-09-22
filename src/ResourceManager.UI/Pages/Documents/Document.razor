@@ -10,6 +10,7 @@
 @inject IDocumentService _documentService
 @inject IUserService _userService
 @inject NavigationManager _navigationManager
+@inject ISnackbar Snackbar
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mx-auto my-4">
     <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="GoBack">
@@ -71,10 +72,10 @@
             <MudDivider Class="my-4" />
 
             <MudGrid>
-                @if (selectedUser?.Actor == Actor.Provider && selectedUser?.Id == document.CreatorId)  // Assuming `Role` or similar property identifies the user's type
+                @if (selectedUser?.Actor == Actor.Provider && selectedUser?.Id == document.CreatorId)
                 {
                     <MudItem xs="12" sm="4">
-                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Edit">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Edit" OnClick="@(async () => await UpdateDocumentDialog(DocumentId))">
                             Edit Document
                         </MudButton>
                     </MudItem>
@@ -102,10 +103,10 @@
                             Reject Document
                         </MudButton>
                     </MudItem>
+
+
                 }
             </MudGrid>
-
-            
         }
     </MudPaper>
 </MudContainer>
@@ -126,8 +127,9 @@
         isLoading = true;
         try
         {
-            if (!string.IsNullOrEmpty(UserId.ToString()))
+            if (UserId.HasValue)
                 selectedUser = await _userService.GetUser(UserId.Value);
+
             document = await _documentService.GetDocument(DocumentId);
         }
         catch (Exception ex)
@@ -150,17 +152,18 @@
                 var result = await _documentService.SubmitForApproval(DocumentId, UserId.Value);
                 if (result)
                 {
-                    Console.WriteLine("Document submitted for approval successfully.");
+                    Snackbar.Add("Document submitted for approval successfully.", Severity.Success);
+                    await OnParametersSetAsync(); // Reload the document
                 }
                 else
                 {
-                    Console.WriteLine("Failed to submit document for approval.");
+                    Snackbar.Add("Failed to submit document for approval.", Severity.Error);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error submitting document for approval: {ex.Message}");
+            Snackbar.Add($"Error submitting document for approval: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -178,17 +181,18 @@
                 var result = await _documentService.ApproveDocument(DocumentId, UserId.Value);
                 if (result)
                 {
-                    Console.WriteLine("Document approved successfully.");
+                    Snackbar.Add("Document approved successfully.", Severity.Success);
+                    await OnParametersSetAsync(); // Reload the document
                 }
                 else
                 {
-                    Console.WriteLine("Failed to approve document.");
+                    Snackbar.Add("Failed to approve document.", Severity.Error);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error approving document: {ex.Message}");
+            Snackbar.Add($"Error approving document: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -204,21 +208,21 @@
             if (UserId.HasValue)
             {
                 var rejectRequest = new RejectDocumentRequest(rejectionReason);
-
-                var result = await _documentService.RejectDocuemt(DocumentId, UserId.Value, rejectRequest);
+                var result = await _documentService.RejectDocument(DocumentId, UserId.Value, rejectRequest);
                 if (result)
                 {
-                    Console.WriteLine("Document rejected successfully.");
+                    Snackbar.Add("Document rejected successfully.", Severity.Success);
+                    GoBack(); // Reload the document
                 }
                 else
                 {
-                    Console.WriteLine("Failed to reject document.");
+                    Snackbar.Add("Failed to reject document.", Severity.Error);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error rejecting document: {ex.Message}");
+            Snackbar.Add($"Error rejecting document: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -245,6 +249,25 @@
             {
                 GoBack();
             }
+        }
+    }
+
+    private async Task UpdateDocumentDialog(Guid documentId)
+    {
+        var parameters = new DialogParameters
+        {
+            { "DocumentId", documentId }
+        };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = DialogService.Show<UpdateDocumentDialog>("Update Document", parameters, options);
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is bool updateSuccess && updateSuccess)
+        {
+            // Refresh the document list after successful update
+            await OnParametersSetAsync();
         }
     }
 }
