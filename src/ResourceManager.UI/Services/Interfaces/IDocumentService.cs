@@ -3,6 +3,7 @@ using ResourceManager.Application.Documents.CreateDocument;
 using ResourceManager.Application.Documents.Reject;
 using ResourceManager.Application.Documents.UpdateDocument;
 using ResourceManager.Application.Workflows.Create;
+using ResourceManager.Application.Workflows.GetById;
 
 namespace ResourceManager.UI.Services.Interfaces;
 
@@ -17,7 +18,8 @@ public interface IDocumentService
     Task<List<HistoryResponse>> GetHistories(Guid documentId);
     Task<bool> AddWorkflow(Guid documentId, WorkflowRequest workflow);
     Task<bool> RemoveWorkflow(Guid documentId, Guid workflowId);
+    Task<List<WorkflowResponse>> GetWorkflows(Guid documentId);
     Task<bool> SubmitForApproval(Guid documentId, Guid userId);
-    Task<bool> ApproveDocument(Guid documentId, Guid userId);
+    Task<bool> ApproveDocument(Guid documentId, Guid userId, Guid workflowId);
     Task<bool> RejectDocument(Guid documentId, Guid userId, RejectDocumentRequest reason);
 }

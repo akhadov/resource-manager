@@ -3,6 +3,7 @@ using ResourceManager.Application.Documents.CreateDocument;
 using ResourceManager.Application.Documents.Reject;
 using ResourceManager.Application.Documents.UpdateDocument;
 using ResourceManager.Application.Workflows.Create;
+using ResourceManager.Application.Workflows.GetById;
 using ResourceManager.UI.Services.Interfaces;
 using System.Net.Http.Json;
 using System.Text;
@@ -183,11 +184,11 @@ public class DocumentService : IDocumentService
         }
     }
 
-    public async Task<bool> ApproveDocument(Guid documentId, Guid userId)
+    public async Task<bool> ApproveDocument(Guid documentId, Guid userId, Guid workflowId)
     {
         try
         {
-            var response = await _http.PutAsync($"documents/{documentId}/approve/{userId}", null);
+            var response = await _http.PutAsync($"documents/{documentId}/approve/{userId}/workflows{workflowId}", null);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -281,6 +282,23 @@ public class DocumentService : IDocumentService
             // Handle any exceptions and log the error message
             Console.WriteLine($"An error occurred while removing workflow: {e.Message}");
             return false;
+        }
+    }
+
+    public async Task<List<WorkflowResponse>> GetWorkflows(Guid documentId)
+    {
+        try
+        {
+            var apiResponse = await _http.GetStreamAsync($"documents/{documentId}/workflows");
+
+            var workflows = await JsonSerializer.DeserializeAsync<List<WorkflowResponse>>(apiResponse, _serializerOptions);
+
+            return workflows;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 }

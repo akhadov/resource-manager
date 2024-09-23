@@ -1,0 +1,43 @@
+﻿@using ResourceManager.Application.Workflows.GetById
+@using ResourceManager.UI.Services.Interfaces
+@inject IDocumentService _documentService
+
+<MudDialogTitle>Workflows</MudDialogTitle>
+
+<MudDialogContent>
+    <MudTable Items="_workflows" Dense="true" Striped="true" Hover="true">
+        <HeaderContent>
+            <MudTh>Workflow ID</MudTh>
+            <MudTh>Approver Level</MudTh>
+            <MudTh>Current Workflow</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.WorkflowId</MudTd>
+            <MudTd>@context.ApproverLevel</MudTd>
+            <MudTd>@(context.IsCurrentWorkflow ? "Yes" : "No")</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudDialogContent>
+
+<MudDialogActions>
+    <MudButton OnClick="CloseDialog" Color="Color.Secondary">Close</MudButton>
+</MudDialogActions>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Guid DocumentId { get; set; }
+
+    private IEnumerable<WorkflowResponse> _workflows = new List<WorkflowResponse>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetWorkflows();
+    }
+
+    private async Task GetWorkflows()
+    {
+        _workflows = await _documentService.GetWorkflows(DocumentId);
+    }
+
+    private void CloseDialog() => MudDialog.Close();
+}

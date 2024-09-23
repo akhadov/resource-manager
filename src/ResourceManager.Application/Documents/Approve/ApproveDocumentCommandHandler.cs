@@ -2,6 +2,7 @@
 using ResourceManager.Application.Abstractions.Messaging;
 using ResourceManager.Domain.Documents;
 using ResourceManager.Domain.Users;
+using ResourceManager.Domain.Workflows;
 using ResourceManager.SharedKernel;
 
 namespace ResourceManager.Application.Documents.Approve;
@@ -22,10 +23,14 @@ internal sealed class ApproveDocumentCommandHandler(
             throw new InvalidOperationException("Only approvers can approve documents.");
         }
 
-        var document = await documentRepository.GetByIdAsync(request.DocumentId, cancellationToken);
+        var document = await documentRepository.GetWorkflowsAsync(request.DocumentId, cancellationToken);
 
 
         document.Approve(user.Id, user.Level, dateTimeProvider.UtcNow);
+
+        var workflow = document.Workflows.Find(x => x.Id == request.WorkflowId);
+
+        workflow.MarkAsCurrent();
 
         documentRepository.Update(document);
 

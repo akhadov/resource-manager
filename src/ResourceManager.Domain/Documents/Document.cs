@@ -34,7 +34,6 @@ public sealed class Document : Entity
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public Level? CurrentApproverLevel { get; private set; }
-    //public Level? NextApproverLevel { get; private set; }
     public List<DocumentHistory> Histories => _histories.ToList();
     public List<Workflow> Workflows => _workflows.ToList();
 
@@ -139,7 +138,6 @@ public sealed class Document : Entity
         //    Status = DocumentStatus.Approved;
         //    CurrentApproverLevel = null; // Reset since all approvals are done
         //}
-
         Status = DocumentStatus.Approved;
         UpdatedAt = updatedAt;
         AddHistory(approverId, $"Document approved by {approverLevel}", HistoryType.Approval, updatedAt);

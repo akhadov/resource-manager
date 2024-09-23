@@ -3,6 +3,7 @@
 @using ResourceManager.Application.Documents.GetDocument
 @using ResourceManager.Application.Documents.Reject
 @using ResourceManager.Application.Users.GetUser
+@using ResourceManager.Application.Workflows.GetById
 @using ResourceManager.Domain.Documents
 @using ResourceManager.Domain.Users
 @using ResourceManager.UI.Services.Interfaces
@@ -93,9 +94,12 @@
                 else if (selectedUser?.Actor == Actor.Approver)
                 {
                     <MudItem xs="12" sm="4">
-                        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Check" OnClick="ApproveDocument" Class="ml-2">
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Check"
+                                   OnClick="@(async () => { if (selectedWorkflow != null) await ApproveDocument(selectedWorkflow.WorkflowId); })"
+                                   Class="ml-2">
                             Approve Document
                         </MudButton>
+
                     </MudItem>
                     <MudItem xs="12" sm="4">
                         <MudTextField @bind-Value="rejectionReason" Label="Rejection Reason" Variant="Variant.Filled" Color="Color.Error" Required="true" />
@@ -103,9 +107,8 @@
                             Reject Document
                         </MudButton>
                     </MudItem>
-
-
                 }
+                <MudButton Color="Color.Primary" OnClick="OpenWorkflowsDialog">Show Workflows</MudButton>
             </MudGrid>
         }
     </MudPaper>
@@ -116,6 +119,8 @@
     [Parameter] public Guid? UserId { get; set; } // Passed from the previous page
     private DocumentResponse? document;
     public UserResponse? selectedUser;
+    private IEnumerable<WorkflowResponse> _workflows = new List<WorkflowResponse>();
+    public WorkflowResponse? selectedWorkflow;
     private bool isLoading = true;
     private bool isSubmitting = false;
     private bool isApproving = false;
@@ -171,14 +176,18 @@
         }
     }
 
-    private async Task ApproveDocument()
+    private async Task ApproveDocument(Guid workflowId)
     {
+        _workflows = await _documentService.GetWorkflows(DocumentId);
+
+        selectedWorkflow = _workflows.FirstOrDefault(x => x.WorkflowId == workflowId);
+
         isApproving = true;
         try
         {
             if (UserId.HasValue)
             {
-                var result = await _documentService.ApproveDocument(DocumentId, UserId.Value);
+                var result = await _documentService.ApproveDocument(DocumentId, UserId.Value, selectedWorkflow.WorkflowId);
                 if (result)
                 {
                     Snackbar.Add("Document approved successfully.", Severity.Success);
@@ -269,5 +278,16 @@
             // Refresh the document list after successful update
             await OnParametersSetAsync();
         }
+    }
+
+    private async Task OpenWorkflowsDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            { "DocumentId", DocumentId }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        DialogService.Show<WorkflowsDialog>("Workflows", parameters, options);
     }
 }
