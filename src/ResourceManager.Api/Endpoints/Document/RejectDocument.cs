@@ -10,10 +10,9 @@ public class RejectDocument : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPut("documents/{documentId}/reject/user/{userId}/workflow/{workflowId}", async (
+        app.MapPut("documents/{documentId}/reject/{userId}", async (
             Guid documentId,
             Guid userId,
-            Guid workflowId,
             RejectDocumentRequest request,
             ISender sender,
             CancellationToken cancellationToken) =>
@@ -21,7 +20,6 @@ public class RejectDocument : IEndpoint
             var command = new RejectDocumentCommand(
                 documentId,
                 userId,
-                workflowId,
                 request.Reason);
 
             Result result = await sender.Send(command, cancellationToken);

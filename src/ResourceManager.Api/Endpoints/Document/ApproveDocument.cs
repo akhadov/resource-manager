@@ -11,14 +11,13 @@ public class ApproveDocument : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPut("documents/{documentId}/approve/user/{userId}/workflow/{workflowId}", async (
+        app.MapPut("documents/{documentId}/approve/{userId}", async (
             Guid documentId,
             Guid userId,
-            Guid workflowId,
             ISender sender,
             CancellationToken cancellationToken) =>
         {
-            Result result = await sender.Send(new ApproveDocumentCommand(documentId, userId, workflowId), cancellationToken);
+            Result result = await sender.Send(new ApproveDocumentCommand(documentId, userId), cancellationToken);
 
             return result.Match(Results.NoContent, CustomResults.Problem);
         })

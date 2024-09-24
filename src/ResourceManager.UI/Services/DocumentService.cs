@@ -184,11 +184,11 @@ public class DocumentService : IDocumentService
         }
     }
 
-    public async Task<bool> ApproveDocument(Guid documentId, Guid userId, Guid workflowId)
+    public async Task<bool> ApproveDocument(Guid documentId, Guid userId)
     {
         try
         {
-            var response = await _http.PutAsync($"documents/{documentId}/approve/user/{userId}/workflow/{workflowId}", null);
+            var response = await _http.PutAsync($"documents/{documentId}/approve/{userId}", null);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -205,13 +205,13 @@ public class DocumentService : IDocumentService
         }
     }
 
-    public async Task<bool> RejectDocument(Guid documentId, Guid userId, Guid workflowId, RejectDocumentRequest reason)
+    public async Task<bool> RejectDocument(Guid documentId, Guid userId, RejectDocumentRequest reason)
     {
         try
         {
             var rejectDocumentJson = new StringContent(JsonSerializer.Serialize(reason), Encoding.UTF8, "application/json");
 
-            var response = await _http.PutAsync($"documents/{documentId}/reject/user/{userId}/workflow/{workflowId}", rejectDocumentJson);
+            var response = await _http.PutAsync($"documents/{documentId}/reject/{userId}", rejectDocumentJson);
 
             if (!response.IsSuccessStatusCode)
             {

@@ -24,16 +24,6 @@ internal sealed class UpdateDocumentCommandHandler(
             throw new Exception("Only the document owner (Provider) can update the document.");
         }
 
-        if (document.Status == DocumentStatus.Rejected)
-        {
-            var workflows = await documentRepository.GetWorkflowsAsync(request.DocumentId);
-
-            foreach (var workflow in workflows.Workflows)
-            {
-                document.RemoveWorkflow(workflow);
-            }
-        }
-
         document.Update(
             document.CreatorId,
             request.Title,

@@ -1,6 +1,7 @@
 ﻿using ResourceManager.Domain.Users;
 using ResourceManager.Domain.Workflows;
 using ResourceManager.SharedKernel;
+using System.Reflection.Metadata;
 
 namespace ResourceManager.Domain.Documents;
 
@@ -77,7 +78,11 @@ public sealed class Document : Entity
         if (Status == DocumentStatus.Rejected)
         {
             Status = DocumentStatus.Draft;
-            ClearWorkflows();
+
+            foreach (var workflow in _workflows)
+            {
+                RemoveWorkflow(workflow);
+            }
         }
 
         // Add history entry for the update

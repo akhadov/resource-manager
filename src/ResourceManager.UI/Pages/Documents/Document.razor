@@ -27,7 +27,7 @@
             </MudItem>
             <MudItem xs="6">
                 <MudGrid Justify="Justify.FlexEnd">
-                    @if (selectedUser?.Actor == Actor.Provider && selectedUser?.Id == document.CreatorId)
+                    @if (selectedUser?.Actor == Actor.Provider && selectedUser?.Id == document.CreatorId && document.Status == DocumentStatus.Draft)
                     {
                         <MudItem xs="12" sm="4">
                             <MudSelect T="Level" @bind-Value="selectedLevel">
@@ -130,16 +130,13 @@
                 else if (selectedUser?.Actor == Actor.Approver)
                 {
                     <MudItem xs="12" sm="4">
-                        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Check"
-                                   OnClick="@(async () => { if (selectedWorkflow != null) await ApproveDocument(selectedWorkflow.WorkflowId); })"
-                                   Class="ml-2">
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Check" OnClick="ApproveDocument" Class="ml-2">
                             Approve Document
                         </MudButton>
-
                     </MudItem>
                     <MudItem xs="12" sm="4">
                         <MudTextField @bind-Value="rejectionReason" Label="Rejection Reason" Variant="Variant.Filled" Color="Color.Error" Required="true" />
-                        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Close" OnClick="@(async () => { if (selectedWorkflow != null) await RejectDocument(selectedWorkflow.WorkflowId); })" Disabled="@string.IsNullOrWhiteSpace(rejectionReason)" Class="ml-2">
+                        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Close" OnClick="RejectDocument" Disabled="@string.IsNullOrWhiteSpace(rejectionReason)" Class="ml-2">
                             Reject Document
                         </MudButton>
                     </MudItem>
@@ -215,18 +212,14 @@
         }
     }
 
-    private async Task ApproveDocument(Guid workflowId)
+    private async Task ApproveDocument()
     {
-        _workflows = await _documentService.GetWorkflows(DocumentId);
-
-        selectedWorkflow = _workflows.FirstOrDefault(x => x.WorkflowId == workflowId);
-
         isApproving = true;
         try
         {
             if (UserId.HasValue)
             {
-                var result = await _documentService.ApproveDocument(DocumentId, UserId.Value, selectedWorkflow.WorkflowId);
+                var result = await _documentService.ApproveDocument(DocumentId, UserId.Value);
                 if (result)
                 {
                     Snackbar.Add("Document approved successfully.", Severity.Success);
@@ -248,11 +241,8 @@
         }
     }
 
-    private async Task RejectDocument(Guid workflowId)
+    private async Task RejectDocument()
     {
-        _workflows = await _documentService.GetWorkflows(DocumentId);
-
-        selectedWorkflow = _workflows.FirstOrDefault(x => x.WorkflowId == workflowId);
 
         isRejecting = true;
         try
@@ -260,7 +250,7 @@
             if (UserId.HasValue)
             {
                 var rejectRequest = new RejectDocumentRequest(rejectionReason);
-                var result = await _documentService.RejectDocument(DocumentId, UserId.Value, selectedWorkflow.WorkflowId, rejectRequest);
+                var result = await _documentService.RejectDocument(DocumentId, UserId.Value, rejectRequest);
                 if (result)
                 {
                     Snackbar.Add("Document rejected successfully.", Severity.Success);

@@ -28,7 +28,7 @@ internal sealed class ApproveDocumentCommandHandler(
 
         document.Approve(user.Id, user.Level, dateTimeProvider.UtcNow);
 
-        var workflow = document.Workflows.Find(x => x.Id == request.WorkflowId);
+        var workflow = document.Workflows.Find(x => x.ApproverLevel == user.Level);
 
         workflow.MarkAsApproved();
 

@@ -22,7 +22,7 @@ internal sealed class RejectDocumentCommandHandler(
 
         document.Reject(user.Id, $"{request.Reason}", dateTimeProvider.UtcNow);
 
-        var workflow = document.Workflows.Find(x => x.Id == request.WorkflowId);
+        var workflow = document.Workflows.Find(x => x.ApproverLevel == user.Level);
 
         workflow.MarkAsRejected();
 
