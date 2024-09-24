@@ -188,7 +188,7 @@ public class DocumentService : IDocumentService
     {
         try
         {
-            var response = await _http.PutAsync($"documents/{documentId}/approve/{userId}/workflows{workflowId}", null);
+            var response = await _http.PutAsync($"documents/{documentId}/approve/user/{userId}/workflow/{workflowId}", null);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -205,13 +205,13 @@ public class DocumentService : IDocumentService
         }
     }
 
-    public async Task<bool> RejectDocument(Guid documentId, Guid userId, RejectDocumentRequest reason)
+    public async Task<bool> RejectDocument(Guid documentId, Guid userId, Guid workflowId, RejectDocumentRequest reason)
     {
         try
         {
             var rejectDocumentJson = new StringContent(JsonSerializer.Serialize(reason), Encoding.UTF8, "application/json");
 
-            var response = await _http.PutAsync($"documents/{documentId}/reject/{userId}", rejectDocumentJson);
+            var response = await _http.PutAsync($"documents/{documentId}/reject/user/{userId}/workflow/{workflowId}", rejectDocumentJson);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -232,8 +232,10 @@ public class DocumentService : IDocumentService
     {
         try
         {
+            var body = new List<WorkflowRequest>();
+            body.Add(workflow);
             // Serialize the workflow request to JSON format
-            var workflowJson = new StringContent(JsonSerializer.Serialize(workflow), Encoding.UTF8, "application/json");
+            var workflowJson = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
 
             // Make a POST request to add a new workflow to the document
             var response = await _http.PostAsync($"documents/{documentId}/workflows", workflowJson);

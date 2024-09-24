@@ -3,6 +3,7 @@
 @using ResourceManager.Application.Documents.GetDocument
 @using ResourceManager.Application.Documents.Reject
 @using ResourceManager.Application.Users.GetUser
+@using ResourceManager.Application.Workflows.Create
 @using ResourceManager.Application.Workflows.GetById
 @using ResourceManager.Domain.Documents
 @using ResourceManager.Domain.Users
@@ -19,6 +20,41 @@
     </MudButton>
 
     <MudPaper Class="pa-4" Elevation="4">
+        <!-- Header inside MudPaper for Document Details and Show Workflows button -->
+        <MudGrid>
+            <MudItem xs="6">
+                <MudText Typo="Typo.h6" Color="Color.Primary">Document Details</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudGrid Justify="Justify.FlexEnd">
+                    @if (selectedUser?.Actor == Actor.Provider && selectedUser?.Id == document.CreatorId)
+                    {
+                        <MudItem xs="12" sm="4">
+                            <MudSelect T="Level" @bind-Value="selectedLevel">
+                                @foreach (var level in Enum.GetValues(typeof(Level)))
+                                {
+                                    <MudSelectItem T="Level" Value="(Level)level">@level.ToString()</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+
+                        <MudItem xs="12" sm="4">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(async () => await AddWorkflow())">
+                                Add Workflow
+                            </MudButton>
+                        </MudItem>
+                    }
+                        <MudItem>
+                            <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                                       StartIcon="@Icons.Material.Filled.History"
+                                       OnClick="OpenWorkflowsDialog">
+                                Show Workflows
+                            </MudButton>
+                        </MudItem>
+                </MudGrid>
+            </MudItem>
+        </MudGrid>
+
         @if (isLoading)
         {
             <MudText Typo="Typo.h6" Align="Align.Center">
@@ -103,16 +139,18 @@
                     </MudItem>
                     <MudItem xs="12" sm="4">
                         <MudTextField @bind-Value="rejectionReason" Label="Rejection Reason" Variant="Variant.Filled" Color="Color.Error" Required="true" />
-                        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Close" OnClick="RejectDocument" Disabled="@string.IsNullOrWhiteSpace(rejectionReason)" Class="ml-2">
+                        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Close" OnClick="@(async () => { if (selectedWorkflow != null) await RejectDocument(selectedWorkflow.WorkflowId); })" Disabled="@string.IsNullOrWhiteSpace(rejectionReason)" Class="ml-2">
                             Reject Document
                         </MudButton>
                     </MudItem>
                 }
-                <MudButton Color="Color.Primary" OnClick="OpenWorkflowsDialog">Show Workflows</MudButton>
             </MudGrid>
         }
     </MudPaper>
 </MudContainer>
+
+
+
 
 @code {
     [Parameter] public Guid DocumentId { get; set; }
@@ -126,6 +164,7 @@
     private bool isApproving = false;
     private bool isRejecting = false;
     private string rejectionReason = string.Empty; // Input field binding
+    private Level selectedLevel = Level.Reviewer;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -209,15 +248,19 @@
         }
     }
 
-    private async Task RejectDocument()
+    private async Task RejectDocument(Guid workflowId)
     {
+        _workflows = await _documentService.GetWorkflows(DocumentId);
+
+        selectedWorkflow = _workflows.FirstOrDefault(x => x.WorkflowId == workflowId);
+
         isRejecting = true;
         try
         {
             if (UserId.HasValue)
             {
                 var rejectRequest = new RejectDocumentRequest(rejectionReason);
-                var result = await _documentService.RejectDocument(DocumentId, UserId.Value, rejectRequest);
+                var result = await _documentService.RejectDocument(DocumentId, UserId.Value, selectedWorkflow.WorkflowId, rejectRequest);
                 if (result)
                 {
                     Snackbar.Add("Document rejected successfully.", Severity.Success);
@@ -290,4 +333,26 @@
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
         DialogService.Show<WorkflowsDialog>("Workflows", parameters, options);
     }
+
+    private async Task AddWorkflow()
+    {
+        if (selectedLevel == null) // Add a check for safety
+        {
+            Snackbar.Add("Please select a level before adding a workflow.", Severity.Warning);
+            return;
+        }
+
+        var workflowRequest = new WorkflowRequest(selectedLevel);
+        var result = await _documentService.AddWorkflow(DocumentId, workflowRequest);
+        if (result)
+        {
+            Snackbar.Add("Workflow added successfully.", Severity.Success);
+            await OnParametersSetAsync(); // Reload document details after adding workflow
+        }
+        else
+        {
+            Snackbar.Add("Failed to add workflow.", Severity.Error);
+        }
+    }
+
 }

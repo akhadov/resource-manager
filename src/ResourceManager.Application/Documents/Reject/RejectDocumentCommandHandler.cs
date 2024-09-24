@@ -16,11 +16,15 @@ internal sealed class RejectDocumentCommandHandler(
 {
     public async Task<Result> Handle(RejectDocumentCommand request, CancellationToken cancellationToken)
     {
-        var document = await documentRepository.GetByIdAsync(request.DocumentId, cancellationToken);
+        var document = await documentRepository.GetWorkflowsAsync(request.DocumentId, cancellationToken);
 
         var user = await userRepository.GetByIdAsync(request.UserId, cancellationToken);
 
         document.Reject(user.Id, $"{request.Reason}", dateTimeProvider.UtcNow);
+
+        var workflow = document.Workflows.Find(x => x.Id == request.WorkflowId);
+
+        workflow.MarkAsRejected();
 
         documentRepository.Update(document);
 

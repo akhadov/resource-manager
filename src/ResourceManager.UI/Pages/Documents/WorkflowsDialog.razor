@@ -2,26 +2,32 @@
 @using ResourceManager.UI.Services.Interfaces
 @inject IDocumentService _documentService
 
-<MudDialogTitle>Workflows</MudDialogTitle>
 
-<MudDialogContent>
-    <MudTable Items="_workflows" Dense="true" Striped="true" Hover="true">
+<MudDialogContent Class="dialog-content">
+    <MudTable Items="_workflows" Dense="true" Striped="true" Hover="true" Class="modern-table">
         <HeaderContent>
-            <MudTh>Workflow ID</MudTh>
             <MudTh>Approver Level</MudTh>
-            <MudTh>Current Workflow</MudTh>
+            <MudTh>Result</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd>@context.WorkflowId</MudTd>
             <MudTd>@context.ApproverLevel</MudTd>
-            <MudTd>@(context.IsCurrentWorkflow ? "Yes" : "No")</MudTd>
+            <MudTd>
+                @if (!context.IsChecked)
+                {
+                    <MudIcon Color="Color.Info" Icon="@Icons.Material.Filled.Schedule" />
+                }
+                else if (context.IsApproved)
+                {
+                    <MudIcon Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle" />
+                }
+                else
+                {
+                    <MudIcon Color="Color.Error" Icon="@Icons.Material.Filled.Cancel" />
+                }
+            </MudTd>
         </RowTemplate>
     </MudTable>
 </MudDialogContent>
-
-<MudDialogActions>
-    <MudButton OnClick="CloseDialog" Color="Color.Secondary">Close</MudButton>
-</MudDialogActions>
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }

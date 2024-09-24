@@ -30,7 +30,7 @@ internal sealed class ApproveDocumentCommandHandler(
 
         var workflow = document.Workflows.Find(x => x.Id == request.WorkflowId);
 
-        workflow.MarkAsCurrent();
+        workflow.MarkAsApproved();
 
         documentRepository.Update(document);
 

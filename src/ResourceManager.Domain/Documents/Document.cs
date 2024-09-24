@@ -77,6 +77,7 @@ public sealed class Document : Entity
         if (Status == DocumentStatus.Rejected)
         {
             Status = DocumentStatus.Draft;
+            ClearWorkflows();
         }
 
         // Add history entry for the update

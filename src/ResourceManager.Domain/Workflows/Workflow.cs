@@ -12,13 +12,15 @@ public sealed class Workflow : Entity
     {
         DocumentId = documentId;
         ApproverLevel = approverLevel;
+        IsChecked = false;
     }
 
     private Workflow() { }
 
     public Guid DocumentId { get; private set; }
     public Level ApproverLevel { get; private set; }
-    public bool IsCurrentWorkflow { get; private set; }
+    public bool IsApproved { get; private set; }
+    public bool IsChecked { get; private set; }
 
     public static Result<Workflow> Create(
         Guid documentId,
@@ -32,8 +34,16 @@ public sealed class Workflow : Entity
         return workklow;
     }
 
-    public void MarkAsCurrent()
+    public void MarkAsApproved()
     {
-        IsCurrentWorkflow = true;
+        IsApproved = true;
+        IsChecked = true;
     }
+
+    public void MarkAsRejected()
+    {
+        IsApproved = false;
+        IsChecked = true;
+    }
+
 }

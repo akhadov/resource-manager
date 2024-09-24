@@ -21,5 +21,5 @@ public interface IDocumentService
     Task<List<WorkflowResponse>> GetWorkflows(Guid documentId);
     Task<bool> SubmitForApproval(Guid documentId, Guid userId);
     Task<bool> ApproveDocument(Guid documentId, Guid userId, Guid workflowId);
-    Task<bool> RejectDocument(Guid documentId, Guid userId, RejectDocumentRequest reason);
+    Task<bool> RejectDocument(Guid documentId, Guid userId, Guid workflowId, RejectDocumentRequest reason);
 }

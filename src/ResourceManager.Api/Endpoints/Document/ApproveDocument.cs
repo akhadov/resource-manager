@@ -11,7 +11,7 @@ public class ApproveDocument : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPut("documents/{documentId}/approve/{userId}/workflows{workflowId}", async (
+        app.MapPut("documents/{documentId}/approve/user/{userId}/workflow/{workflowId}", async (
             Guid documentId,
             Guid userId,
             Guid workflowId,

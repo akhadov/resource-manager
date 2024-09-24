@@ -15,7 +15,8 @@ internal sealed class GetWorkflowByIdQueryHandler(
         var result = document.Workflows.Select(workflow => new  WorkflowResponse(
             workflow.Id,
             workflow.ApproverLevel,
-            workflow.IsCurrentWorkflow
+            workflow.IsApproved,
+            workflow.IsChecked
         )).ToList();
 
         return result;

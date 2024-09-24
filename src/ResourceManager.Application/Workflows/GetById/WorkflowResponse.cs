@@ -5,4 +5,5 @@ namespace ResourceManager.Application.Workflows.GetById;
 public sealed record WorkflowResponse(
     Guid WorkflowId,
     Level ApproverLevel,
-    bool IsCurrentWorkflow);
+    bool IsApproved,
+    bool IsChecked);
