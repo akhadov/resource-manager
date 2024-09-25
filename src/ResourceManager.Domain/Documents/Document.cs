@@ -1,7 +1,6 @@
 ﻿using ResourceManager.Domain.Users;
 using ResourceManager.Domain.Workflows;
 using ResourceManager.SharedKernel;
-using System.Reflection.Metadata;
 
 namespace ResourceManager.Domain.Documents;
 
@@ -57,24 +56,20 @@ public sealed class Document : Entity
 
     public void Update(Guid userId, string title, string content, DateTime updatedAt)
     {
-        // Only documents in Draft or Rejected status can be updated
         if (Status != DocumentStatus.Draft && Status != DocumentStatus.Rejected)
         {
             throw new InvalidOperationException("Only draft or rejected documents can be updated.");
         }
 
-        // Only the creator of the document is allowed to update it
         if (userId != CreatorId)
         {
             throw new UnauthorizedAccessException("Only the document creator can update the document.");
         }
 
-        // Update title and content
         Title = title;
         Content = content;
         UpdatedAt = updatedAt;
 
-        // If document was rejected, change status back to Draft
         if (Status == DocumentStatus.Rejected)
         {
             Status = DocumentStatus.Draft;
@@ -85,7 +80,6 @@ public sealed class Document : Entity
             }
         }
 
-        // Add history entry for the update
         AddHistory(userId, "Document updated", HistoryType.Update, updatedAt);
     }
 
@@ -124,28 +118,35 @@ public sealed class Document : Entity
             throw new InvalidOperationException("Only draft documents can be submitted for approval.");
 
         Status = DocumentStatus.PendingApproval;
-        //CurrentApproverLevel = _workflows[_currentApproverIndex].ApproverLevel;
 
-        AddHistory(userId, "Submitted for approval", HistoryType.StatusChange, createdAt);
+        AddHistory(userId, $"Document submitted for approval to {CurrentApproverLevel}", HistoryType.StatusChange, createdAt);
     }
 
     public void Approve(Guid approverId, Level approverLevel, DateTime updatedAt)
     {
-        //var currentWorkflow = _workflows[_currentApproverIndex];
+        if (Status != DocumentStatus.PendingApproval)
+            throw new InvalidOperationException("Document is not in a state that can be approved.");
 
-        //_currentApproverIndex++;
+        bool anyWorkflowRejected = _workflows.Any(w => !w.IsApproved && w.IsChecked);
 
-        //if (_currentApproverIndex < _workflows.Count)
-        //{
-        //    CurrentApproverLevel = _workflows[_currentApproverIndex].ApproverLevel;
-        //}
-        //else
-        //{
-        //    Status = DocumentStatus.Approved;
-        //    CurrentApproverLevel = null; // Reset since all approvals are done
-        //}
-        Status = DocumentStatus.Approved;
+        if (anyWorkflowRejected)
+        {
+            Status = DocumentStatus.Rejected;
+        }
+       
+        bool allWorkflowsApprovedAndChecked = _workflows.All(w => w.IsApproved && w.IsChecked);
+
+        if (allWorkflowsApprovedAndChecked)
+        {
+            Status = DocumentStatus.Approved;
+        }
+        else
+        {
+            Status = DocumentStatus.PendingApproval;
+        }
+
         UpdatedAt = updatedAt;
+
         AddHistory(approverId, $"Document approved by {approverLevel}", HistoryType.Approval, updatedAt);
     }
 

@@ -15,7 +15,7 @@ internal sealed class SubmitForApprovalCommandHandler(
 {
     public async Task<Result> Handle(SubmitForApprovalCommand request, CancellationToken cancellationToken)
     {
-        var document = await documentRepository.GetByIdAsync(request.DocumentId, cancellationToken);
+        var document = await documentRepository.GetWorkflowsAsync(request.DocumentId, cancellationToken);
 
         var user = await userRepository.GetByIdAsync(request.UserId, cancellationToken);
 
@@ -25,6 +25,16 @@ internal sealed class SubmitForApprovalCommandHandler(
         }
 
         document.SubmitForApproval(document.CreatorId, dateTimeProvider.UtcNow);
+
+        var firstWorkflow = document.Workflows.FirstOrDefault();
+        //if (firstWorkflow != null)
+        //{
+        //    document.CurrentApproverLevel = firstWorkflow.ApproverLevel;
+        //}
+        //else
+        //{
+        //    throw new InvalidOperationException("No workflow exists for this document.");
+        //}
 
         documentRepository.Update(document);
 

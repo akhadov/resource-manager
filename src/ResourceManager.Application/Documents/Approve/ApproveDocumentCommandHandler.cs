@@ -32,6 +32,8 @@ internal sealed class ApproveDocumentCommandHandler(
 
         workflow.MarkAsApproved();
 
+
+
         documentRepository.Update(document);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

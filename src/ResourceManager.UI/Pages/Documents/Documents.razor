@@ -123,16 +123,91 @@
         await LoadDocuments();
     }
 
+    // private async Task LoadDocuments()
+    // {
+    //     _documents = await _documentService.GetDocuments();
+
+    //     if (selectedUser != null && selectedUser.Actor == Actor.Approver)
+    //     {
+    //         // Filter out documents with status 'Draft' if the user is an approver
+    //         _documents = _documents?.Where(doc => doc.Status != DocumentStatus.Draft && doc.Status != DocumentStatus.Rejected);
+    //     }
+    // }
+
     private async Task LoadDocuments()
     {
-        _documents = await _documentService.GetDocuments();
+        // Fetch all documents
+        var allDocuments = await _documentService.GetDocuments();
 
-        if (selectedUser != null && selectedUser.Actor == Actor.Approver)
+        // Initialize filtered documents as an empty list
+        var filteredDocuments = new List<DocumentResponse>();
+
+        if (allDocuments != null)
         {
-            // Filter out documents with status 'Draft' if the user is an approver
-            _documents = _documents?.Where(doc => doc.Status != DocumentStatus.Draft && doc.Status != DocumentStatus.Rejected);
+            // Loop through each document
+            foreach (var document in allDocuments)
+            {
+                // Check if the current user is the document author (creator)
+                var isAuthor = selectedUser != null && selectedUser.Id == document.CreatorId;
+
+                // Get the workflows for the current document
+                var workflows = await _documentService.GetWorkflows(document.Id);
+
+                // Variable to check if the document should be shown to the current user
+                bool shouldShowDocument = false;
+
+                if (isAuthor)
+                {
+                    // If the user is the author, they should see all documents they created
+                    shouldShowDocument = true;
+                }
+                else if (workflows != null)
+                {
+                    // Condition 1: Check if there's a workflow with IsChecked == false and matching the user level
+                    var firstUncheckedWorkflow = workflows.FirstOrDefault(workflow => !workflow.IsChecked);
+
+                    // Condition 2: Check if there's any workflow with IsChecked == true and IsApproved == true
+                    var approvedAndCheckedWorkflow = workflows.Any(workflow => workflow.IsChecked && workflow.IsApproved);
+
+                    if (firstUncheckedWorkflow != null && selectedUser.Level == firstUncheckedWorkflow.ApproverLevel)
+                    {
+                        // Show the document only to the user whose level matches the workflow approval level
+                        shouldShowDocument = true;
+                    }
+                    else if (approvedAndCheckedWorkflow)
+                    {
+                        // Show the document to all users if it's both checked and approved
+                        shouldShowDocument = true;
+                    }
+                }
+
+                // Add the document to the filtered list if the conditions are met
+                if (shouldShowDocument)
+                {
+                    filteredDocuments.Add(document);
+                }
+            }
+
+            // Approver-specific filtering
+            if (selectedUser != null && selectedUser.Actor == Actor.Approver)
+            {
+                // Filter out documents with status 'Draft' or 'Rejected' for approvers
+                filteredDocuments = filteredDocuments
+                    .Where(doc => doc.Status != DocumentStatus.Draft && doc.Status != DocumentStatus.Rejected)
+                    .ToList();
+            }
+
+            // Update the document list with the filtered results
+            _documents = filteredDocuments;
         }
+
+        // Ensure the UI is updated
+        StateHasChanged();
     }
+
+
+
+
 
     private async Task LoadUsers()
     {
